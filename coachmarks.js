@@ -5,43 +5,43 @@ const COACH_DATA = {
   flight: {
     icon: "✈️", title: "항공권 비교 가이드",
     steps: [
-      { emoji:"➕", text:"<b>항공권 추가</b> 버튼으로 직접 찾은 항공편 정보를 입력하세요." },
-      { emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 필터</b>로 최적 일정을 확인하세요." },
-      { emoji:"💰", text:"<b>최저가 뱃지</b>가 가장 저렴한 항공편을 자동으로 표시해줘요." },
-      { emoji:"🔗", text:"<b>예약하기</b> 버튼을 누르면 해당 사이트로 바로 이동합니다." }
+      { target: "#panel-flight .btn-add-entry", emoji:"➕", text:"<b>항공권 추가</b> 버튼으로 직접 찾은 항공편 정보를 입력하세요." },
+      { target: "#flightFilterBar", emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 필터</b>로 최적 일정을 확인하세요." },
+      { target: "#flightSummaryBanner", emoji:"💰", text:"상단 요약에서 <b>최저가 정보</b>를 한눈에 확인할 수 있어요." },
+      { target: "#flightGrid", emoji:"🔗", text:"비교 리스트에서 <b>예약하기</b>를 누르면 항공사 사이트로 바로 이동해요." }
     ]
   },
   hotel: {
     icon: "🏨", title: "호텔 비교 가이드",
     steps: [
-      { emoji:"➕", text:"<b>호텔 추가</b> 버튼으로 후보 숙소를 등록하세요." },
-      { emoji:"⭐", text:"<b>가격순/별점순</b> 정렬로 최적의 숙소를 빠르게 찾아보세요." },
-      { emoji:"🔗", text:"각 카드에서 <b>Agoda · Booking · 야놀자 · 구글맵</b> 링크를 확인하세요." }
+      { target: "#panel-hotel .btn-add-entry", emoji:"➕", text:"<b>호텔 추가</b> 버튼으로 후보 숙소를 등록하세요." },
+      { target: "#hotelFilterBar", emoji:"⭐", text:"<b>지역/정렬 필터</b>로 최적의 숙소를 별점순, 가격순으로 찾으세요." },
+      { target: "#hotelGrid", emoji:"🔗", text:"각 카드에서 <b>Agoda · Booking · 야놀자 · 구글맵</b> 링크를 확인하세요." }
     ]
   },
   tour: {
     icon: "🎡", title: "투어 비교 가이드",
     steps: [
-      { emoji:"🏷", text:"<b>카테고리 필터</b>로 관광, 액티비티, 식사 투어를 골라보세요." },
-      { emoji:"📊", text:"<b>KKday · 마이리얼트립 · 트리플</b> 플랫폼별 가격을 비교하세요." },
-      { emoji:"✏️", text:"카드 우측 상단 <b>수정 버튼</b>으로 투어 정보를 편집할 수 있어요." }
+      { target: "#tourFilterBar", emoji:"🏷", text:"<b>카테고리 필터</b>로 관광, 액티비티, 식사 투어를 골라보세요." },
+      { target: "#tourGrid", emoji:"📊", text:"<b>KKday · 마이리얼트립 · 트리플</b> 등 플랫폼별 가격을 비교하세요." },
+      { target: "#panel-tour .btn-add-entry", emoji:"✏️", text:"<b>투어 추가</b> 버튼으로 직접 찾은 투어 정보를 넣을 수 있어요." }
     ]
   },
   checklist: {
     icon: "📋", title: "체크리스트 가이드",
     steps: [
-      { emoji:"✅", text:"카테고리별로 <b>준비물을 체크</b>하여 여행 준비를 관리하세요." },
-      { emoji:"📊", text:"상단 <b>진행률 바</b>에서 전체 준비 상황을 한눈에 확인하세요." },
-      { emoji:"➕", text:"각 카테고리 하단에서 <b>새 항목을 추가</b>할 수 있어요." }
+      { target: "#checklistLayout", emoji:"✅", text:"이곳에 제공되는 카테고리별 <b>준비물을 체크</b>해보세요." },
+      { target: ".checklist-progress", emoji:"📊", text:"진행률 바에서 전체 준비 <b>진행 상황</b>을 한눈에 확인할 수 있어요." },
+      { target: "#panel-checklist .btn-add-entry", emoji:"➕", text:"<b>섹션 추가</b> 버튼으로 나만의 카테고리도 만들 수 있습니다." }
     ]
   },
   itinerary: {
     icon: "🗺️", title: "여행 일정표 가이드",
     steps: [
-      { emoji:"📅", text:"<b>날짜 추가</b>로 여행일을 추가하고, <b>편집</b> 모드에서 Day를 관리하세요." },
-      { emoji:"📍", text:"<b>장소 검색</b> 시 Google Maps 자동완성으로 좌표가 자동 입력됩니다." },
-      { emoji:"🔵", text:"타임라인 <b>번호</b>를 클릭하면 Google Maps 길찾기가 열려요." },
-      { emoji:"🗺️", text:"장소를 추가하면 <b>지도에 마커와 동선</b>이 자동으로 표시됩니다." }
+      { target: "#dayTabsMini", emoji:"📅", text:"<b>Day별 탭</b>에서 각 날짜를 전환하고, 편집 모드에서 날짜를 지워요." },
+      { target: ".btn-add-place", emoji:"📍", text:"장소 검색은 Google Maps 자동완성으로 <b>위치 정보가 바로 연동</b>돼요." },
+      { target: "#timelineList", emoji:"🔵", text:"타임라인 동그란 <b>번호</b>를 클릭하면 해당 위치로 길찾기가 시작돼요." },
+      { target: "#googleMap", emoji:"🗺️", text:"장소를 등록하면 <b>지도와 동선</b>이 실시간으로 예쁘게 그려집니다!" }
     ]
   }
 };
@@ -89,7 +89,8 @@ function renderCoachMark() {
 
   overlay.innerHTML =
     '<div class="coach-backdrop" onclick="closeCoachMark()"></div>' +
-    '<div class="coach-card">' +
+    '<div class="coach-spotlight" id="coachSpotlight"></div>' +
+    '<div class="coach-card" id="coachCard">' +
       '<div class="coach-header">' +
         '<div class="coach-title">' + data.icon + ' ' + data.title + '</div>' +
         '<button class="coach-close" onclick="closeCoachMark()">✕</button>' +
@@ -107,7 +108,57 @@ function renderCoachMark() {
       '</div>' +
     '</div>';
   overlay.classList.add("active");
+
+  setTimeout(function() {
+    updateSpotlight(step.target);
+  }, 50);
 }
+
+function updateSpotlight(targetSelector) {
+  const spotlight = document.getElementById("coachSpotlight");
+  const card = document.getElementById("coachCard");
+  if (!spotlight || !card) return;
+
+  const targetEl = document.querySelector(targetSelector);
+  if (targetEl && targetEl.offsetParent !== null) {
+    const rect = targetEl.getBoundingClientRect();
+    const pad = 12; // padding around the element
+    spotlight.style.opacity = '1';
+    spotlight.style.top = (rect.top - pad) + 'px';
+    spotlight.style.left = (rect.left - pad) + 'px';
+    spotlight.style.width = (rect.width + pad*2) + 'px';
+    spotlight.style.height = (rect.height + pad*2) + 'px';
+    
+    // Position card relatively near spotlight
+    card.style.position = 'absolute';
+    let cardTop = rect.bottom + pad + 20;
+    if (cardTop + card.offsetHeight > window.innerHeight) {
+      cardTop = rect.top - pad - card.offsetHeight - 20; // place above if clipping
+    }
+    if (cardTop < 20) cardTop = 30; // fallback
+
+    let cardLeft = rect.left + (rect.width / 2) - (card.offsetWidth / 2);
+    if (cardLeft < 20) cardLeft = 20;
+    if (cardLeft + card.offsetWidth > window.innerWidth - 20) cardLeft = window.innerWidth - card.offsetWidth - 20;
+
+    card.style.top = cardTop + 'px';
+    card.style.left = cardLeft + 'px';
+    card.style.margin = '0';
+  } else {
+    // Center fallback
+    spotlight.style.opacity = '0';
+    spotlight.style.top = '50%';
+    spotlight.style.left = '50%';
+    spotlight.style.width = '0px';
+    spotlight.style.height = '0px';
+    
+    card.style.position = 'relative';
+    card.style.top = 'auto';
+    card.style.left = 'auto';
+    card.style.transform = 'none';
+  }
+}
+
 
 function coachNext() { coachStep++; renderCoachMark(); }
 function coachPrev() { coachStep--; renderCoachMark(); }

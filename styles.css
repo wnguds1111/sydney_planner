@@ -2025,8 +2025,16 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
 .coach-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 15, 30, 0.7);
-  backdrop-filter: blur(8px);
+  /* background removed to use spotlight shadow */
+}
+.coach-spotlight {
+  position: absolute;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(10, 15, 30, 0.8);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
+  opacity: 0;
 }
 .coach-card {
   position: relative;
