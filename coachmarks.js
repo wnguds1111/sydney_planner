@@ -42,6 +42,14 @@ const COACH_DATA = {
       { target: "#timelineList", emoji:"🔵", text:"타임라인 동그란 <b>번호</b>를 클릭하면 해당 위치로 길찾기가 시작돼요." },
       { target: "#googleMap", emoji:"🗺️", text:"장소를 등록하면 <b>지도와 동선</b>이 실시간으로 예쁘게 그려집니다!" }
     ]
+  },
+  expense: {
+    icon: "💸", title: "지출 정리 가이드",
+    steps: [
+      { target: "#panel-expense .btn-add-entry", emoji:"➕", text:"<b>지출 내역 추가</b> 버튼으로 쓴 돈을 기록하세요." },
+      { target: "#expenseSummaryBanner", emoji:"📊", text:"호주 달러(AUD)와 <b>실시간 환율</b>이 적용된 원화 총액을 확인하세요." },
+      { target: "#exchangeRateBadge", emoji:"💰", text:"이 영역을 누르면 <b>최신 환율 정보를 다시</b> 불러옵니다." }
+    ]
   }
 };
 

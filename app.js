@@ -24,6 +24,7 @@ let hotelFilter  = "all";
 let flightSort   = "depdate_asc";
 let hotelSort    = "price";
 let flightAnnualFilter = "all"; // 연차 필터: "all" | "5" | "6"
+let exchangeRateAudToKrw = 900; // 기본 환율
 
 // ─── Area Label Map ───
 const AREA_LABELS = {
@@ -108,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   generateStars();
   await loadData();
   startCountdown();
+  fetchExchangeRate();
   renderFlights();
   renderHotels();
   renderTours();
@@ -115,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderDayTabs();
   renderTimeline();
   renderMemos();
+  renderExpenses();
 
   // Google Maps 자동 로드
   activateMap();
@@ -222,6 +225,7 @@ async function loadData() {
       if (!planData.flights) planData.flights = [];
       if (!planData.hotels)  planData.hotels  = [];
       if (!planData.memos)   planData.memos   = [];
+      if (!planData.expenses) planData.expenses = [];
       // 투어 기본값 강제 갱신 (링크 등 업데이트 반영)
       planData.tours = JSON.parse(JSON.stringify(defaultSydneyData.tours));
       console.log("✅ 시드니 플래너 로드 완료");
@@ -1269,3 +1273,134 @@ function renderTours() {
     </div>`;
   }).join("");
 }
+
+// ================================================================
+//  EXCHANGE RATE (환율 연동)
+// ================================================================
+async function fetchExchangeRate() {
+  try {
+    const badge = document.getElementById("exchangeRateBadge");
+    if (badge) badge.textContent = "💰 실시간 환율 로딩 중...";
+    const res = await fetch("https://open.er-api.com/v6/latest/AUD");
+    const data = await res.json();
+    if (data && data.rates && data.rates.KRW) {
+      exchangeRateAudToKrw = data.rates.KRW;
+      if (badge) badge.textContent = `💰 실시간 환율: 1 AUD = ${exchangeRateAudToKrw.toFixed(2)} KRW`;
+      renderExpenses(); // 환율 갱신 후 지출 금액 재계산
+    }
+  } catch (e) {
+    console.error("Exchange rate fetch failed", e);
+    const badge = document.getElementById("exchangeRateBadge");
+    if (badge) badge.textContent = `💰 환율 고정 기준: 1 AUD = 900 KRW`;
+  }
+}
+
+// ================================================================
+//  EXPENSE — CRUD + Render
+// ================================================================
+function openExpenseModal(id = null) {
+  const m = document.getElementById("expenseModal");
+  if (!m) return;
+  m.classList.add("active");
+  
+  if (id) {
+    const ex = planData.expenses.find(e => e.id === id);
+    if (!ex) return;
+    document.getElementById("expenseModalTitle").textContent = "💸 지출 수정";
+    document.getElementById("editExpenseId").value = ex.id;
+    document.getElementById("expenseCategory").value = ex.category || "기타";
+    document.getElementById("expenseTitle").value  = ex.title || "";
+    document.getElementById("expenseAmount").value = ex.amount || "";
+    document.getElementById("expenseMemo").value   = ex.memo || "";
+  } else {
+    document.getElementById("expenseModalTitle").textContent = "💸 지출 등록";
+    document.getElementById("editExpenseId").value = "";
+    document.getElementById("expenseCategory").value = "식비";
+    document.getElementById("expenseTitle").value  = "";
+    document.getElementById("expenseAmount").value = "";
+    document.getElementById("expenseMemo").value   = "";
+  }
+}
+
+function closeExpenseModal() {
+  document.getElementById("expenseModal").classList.remove("active");
+}
+
+function saveExpense() {
+  const id    = document.getElementById("editExpenseId").value;
+  const cat   = document.getElementById("expenseCategory").value;
+  const title = document.getElementById("expenseTitle").value.trim();
+  const amt   = parseFloat(document.getElementById("expenseAmount").value);
+  const memo  = document.getElementById("expenseMemo").value.trim();
+  
+  if (!title) return alert("지출 내역/품목을 입력하세요.");
+  if (isNaN(amt) || amt <= 0) return alert("올바른 결제 금액을 입력하세요.");
+
+  if (id) {
+    const idx = planData.expenses.findIndex(e => e.id === id);
+    if (idx !== -1) {
+      planData.expenses[idx] = { ...planData.expenses[idx], category: cat, title: title, amount: amt, memo: memo };
+    }
+  } else {
+    planData.expenses.push({ id: "ex_" + Date.now(), category: cat, title: title, amount: amt, memo: memo });
+  }
+  scheduleSave();
+  closeExpenseModal();
+  renderExpenses();
+}
+
+function deleteExpense(id) {
+  if (!confirm("이 지출 내역을 삭제하시겠습니까?")) return;
+  planData.expenses = planData.expenses.filter(e => e.id !== id);
+  scheduleSave();
+  renderExpenses();
+}
+
+function renderExpenses() {
+  if (!planData || !planData.expenses) return;
+  const emptyEl  = document.getElementById("expenseEmptyState");
+  const gridEl   = document.getElementById("expenseGrid");
+  const list = planData.expenses;
+  
+  // Update Summary
+  let totalAud = list.reduce((acc, curr) => acc + curr.amount, 0);
+  let totalKrw = totalAud * exchangeRateAudToKrw;
+  
+  document.getElementById("summaryTotalAud").textContent = `A$ ${fmtPrice(totalAud)}`;
+  document.getElementById("summaryTotalKrw").textContent = `₩ ${fmtPrice(totalKrw)}`;
+  
+  if (list.length === 0) {
+    emptyEl.style.display = "flex";
+    gridEl.style.display  = "none";
+    return;
+  }
+  
+  emptyEl.style.display = "none";
+  gridEl.style.display  = "flex";
+  gridEl.style.flexDirection = "column";
+  gridEl.style.gap = "12px";
+  
+  const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
+  
+  gridEl.innerHTML = list.map(e => {
+    const krwEst = e.amount * exchangeRateAudToKrw;
+    return `
+    <div class="glass-card fc-row" id="ex-${e.id}">
+      <div class="fc-header" style="align-items:center;">
+        <div class="fc-header-left">
+          <div class="fc-airline-name" style="font-size:16px;">${CAT_EMOJI[e.category] || "📦"} ${e.title}</div>
+          ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
+        </div>
+        <div class="fc-header-right" style="text-align:right;">
+          <div class="fc-price" style="color:#fdba74;">A$ ${fmtPrice(e.amount)}</div>
+          <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">약 ₩ ${fmtPrice(krwEst)}</div>
+          <div class="fc-actions" style="justify-content:flex-end;">
+            <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
+            <button class="btn-action del" onclick="deleteExpense('${e.id}')" title="삭제">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+

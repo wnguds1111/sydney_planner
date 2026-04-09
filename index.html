@@ -40,6 +40,7 @@
       <div class="countdown-sep">:</div>
       <div class="countdown-item"><div class="countdown-num" id="cdSecs">--</div><div class="countdown-lbl">Secs</div></div>
     </div>
+    <div class="hero-badge" id="exchangeRateBadge" style="margin-top: 14px; font-weight: bold; background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); cursor: pointer;" onclick="fetchExchangeRate()">💰 실시간 환율 로딩 중...</div>
   </div>
 </div>
 
@@ -50,6 +51,7 @@
   <button class="tab-btn" onclick="switchTab('tour', this)"><span class="tab-icon">🎢</span> 투어 비교</button>
   <button class="tab-btn" onclick="switchTab('checklist', this)"><span class="tab-icon">📋</span> 체크리스트</button>
   <button class="tab-btn" onclick="switchTab('itinerary', this)"><span class="tab-icon">🗺️</span> 여행 일정표</button>
+  <button class="tab-btn" onclick="switchTab('expense', this)"><span class="tab-icon">💸</span> 지출 정리</button>
 </div>
 
 <!-- ================================================================ MAIN ================================================================ -->
@@ -244,7 +246,75 @@
     </div>
   </div>
 
+  <!-- ═══ TAB 5: 지출 정리 ═══ -->
+  <div class="tab-panel" id="panel-expense">
+    <div class="section-heading">
+      <div>
+        <div class="section-title"><span class="section-title-icon">💸</span> 지출 정리</div>
+        <div class="section-sub">시드니 여행 중 발생한 모든 지출을 한눈에 관리하세요! 💳</div>
+      </div>
+      <button class="btn-add-entry" onclick="openExpenseModal()">+ 지출 내역 추가</button>
+    </div>
+
+    <!-- 지출 요약 배너 -->
+    <div id="expenseSummaryBanner" class="summary-banner" style="margin-bottom:24px;">
+      <div class="summary-item"><div class="summary-lbl">총 지출 (AUD)</div><div class="summary-val accent" id="summaryTotalAud">A$ 0</div></div>
+      <div class="summary-divider"></div>
+      <div class="summary-item"><div class="summary-lbl">총 지출 (KRW 환산)</div><div class="summary-val" id="summaryTotalKrw">₩ 0</div></div>
+    </div>
+
+    <!-- 지출 리스트 -->
+    <div id="expenseTableWrap">
+      <div id="expenseEmptyState" class="empty-state">
+        <div class="empty-icon">🧾</div>
+        <div class="empty-title">아직 지출 내역이 없어요</div>
+        <div class="empty-sub">우측 상단의 "지출 내역 추가" 버튼으로 소비 금액을 기록해보세요!</div>
+        <button class="btn-add-entry" onclick="openExpenseModal()">+ 첫 지출 등록하기</button>
+      </div>
+      <div class="flight-compare-table" id="expenseGrid" style="display:none;">
+        <!-- JS 렌더링 -->
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main-container -->
+
+<!-- ================================================================ MODAL: 지출 내역 추가/수정 ================================================================ -->
+<div class="modal-overlay" id="expenseModal">
+  <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-header">
+      <div class="modal-title" id="expenseModalTitle">💸 지출 등록</div>
+      <button class="btn-close-modal" onclick="closeExpenseModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editExpenseId">
+      <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <select class="form-input" id="expenseCategory">
+          <option value="항공/교통">✈️ 항공/교통</option>
+          <option value="숙박">🏨 숙박</option>
+          <option value="식비">🍔 식비</option>
+          <option value="관광/투어">🎡 관광/투어</option>
+          <option value="쇼핑">🛍️ 쇼핑</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">내역/품목 이름</label>
+        <input class="form-input" type="text" id="expenseTitle" placeholder="예: 오페라 하우스 투어, 햄버거 세트...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">결제 금액 (AUD)</label>
+        <input class="form-input" type="number" id="expenseAmount" placeholder="호주 달러 기준 입력 (숫자만)" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모 (선택)</label>
+        <input class="form-input" type="text" id="expenseMemo" placeholder="어디서 사용했는지 등 간단한 메모">
+      </div>
+      <button class="btn-primary" onclick="saveExpense()">💾 지출 저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- ================================================================ MODAL: 투어 추가/수정 ================================================================ -->
 <div class="modal-overlay" id="tourModal">
