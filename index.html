@@ -223,7 +223,10 @@
         <div class="glass-card" style="padding: 24px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
             <div style="font-size:15px; font-weight:800;">📅 일정 목록</div>
-            <button class="filter-chip" onclick="addDay()" style="font-size:11px; padding:5px 12px;">+ 날짜 추가</button>
+            <div style="display:flex;gap:6px;">
+              <button class="filter-chip" id="btnEditDays" onclick="toggleDayEditMode()" style="font-size:11px; padding:5px 12px;">✏️ 편집</button>
+              <button class="filter-chip" onclick="addDay()" style="font-size:11px; padding:5px 12px;">+ 날짜 추가</button>
+            </div>
           </div>
           <div class="day-tabs-mini" id="dayTabsMini"></div>
           <div class="timeline" id="timelineList"></div>
@@ -500,9 +503,13 @@
       <input type="hidden" id="editItemId">
       <div class="form-group"><label class="form-label">날짜 선택</label><select class="form-input" id="modalDay" style="font-family:inherit;"></select></div>
       <div class="form-group"><label class="form-label">방문 시간</label><input class="form-input" type="time" id="modalTime"></div>
-      <div class="form-group"><label class="form-label">장소명</label><input class="form-input" type="text" id="modalName" placeholder="예: Sydney Opera House"></div>
-      <div class="form-group"><label class="form-label">위도 (Lat)</label><input class="form-input" type="text" id="modalLat" placeholder="예: -33.8568"></div>
-      <div class="form-group"><label class="form-label">경도 (Lng)</label><input class="form-input" type="text" id="modalLng" placeholder="예: 151.2153"></div>
+      <div class="form-group">
+        <label class="form-label">📍 장소 검색 <span style="font-size:11px;color:var(--text-muted);font-weight:500;">(Google Maps 연동 시 자동완성)</span></label>
+        <input class="form-input" type="text" id="modalName" placeholder="예: Sydney Opera House, Bondi Beach..." autocomplete="off">
+        <div id="coordStatus" style="margin-top:6px;font-size:11px;font-weight:600;color:var(--text-muted);"></div>
+      </div>
+      <input type="hidden" id="modalLat">
+      <input type="hidden" id="modalLng">
       <div class="form-group"><label class="form-label">메모</label><textarea class="form-input" id="modalMemo" rows="2" placeholder="이곳에서 할 일이나 특징..."></textarea></div>
       <button class="btn-primary" onclick="savePlace()">💾 일정 저장</button>
     </div>

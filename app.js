@@ -116,9 +116,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderTimeline();
   renderMemos();
 
-  // Restore Google Maps API key
-  const saved = localStorage.getItem("sydney_gmap_key");
-  if (saved) { const inp = document.getElementById("apiKeyInput"); if (inp) inp.value = saved; }
+  // Google Maps 자동 로드
+  activateMap();
 });
 
 // ─── Stars ───
@@ -777,21 +776,61 @@ function addCheckItem(groupId) {
 // ================================================================
 //  ITINERARY
 // ================================================================
+let dayEditMode = false;
+
+function toggleDayEditMode() {
+  dayEditMode = !dayEditMode;
+  const btn = document.getElementById("btnEditDays");
+  if (btn) {
+    btn.textContent = dayEditMode ? "✕ 닫기" : "✏️ 편집";
+    btn.style.background = dayEditMode ? "rgba(239,68,68,0.15)" : "";
+    btn.style.borderColor = dayEditMode ? "rgba(239,68,68,0.35)" : "";
+    btn.style.color = dayEditMode ? "#f87171" : "";
+  }
+  renderDayTabs();
+  renderTimeline();
+}
+
 function renderDayTabs() {
   if (!planData) return;
   const container = document.getElementById("dayTabsMini");
   if (!container) return;
   const keys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
-  container.innerHTML = keys.map(d =>
-    `<button class="day-tab-mini ${d === currentDay ? 'active' : ''}" onclick="switchDay(${d})">Day ${d}</button>`
-  ).join("");
+  container.innerHTML = keys.map(d => {
+    const delBtn = (dayEditMode && keys.length > 1)
+      ? `<button onclick="deleteDay(${d})" style="position:absolute;top:-6px;right:-6px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;" title="Day ${d} 삭제">✕</button>`
+      : "";
+    return `<div style="display:inline-flex;align-items:center;position:relative;">
+      <button class="day-tab-mini ${d === currentDay ? 'active' : ''}" onclick="switchDay(${d})">Day ${d}</button>
+      ${delBtn}
+    </div>`;
+  }).join("");
 }
 
 function switchDay(d) {
   currentDay = d;
   renderDayTabs();
   renderTimeline();
-  if (window.googleMapInstance) updateGoogleMapMarkers();
+  if (googleMapInstance) updateGoogleMapMarkers();
+}
+
+function deleteDay(d) {
+  const keys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
+  if (keys.length <= 1) { alert("최소 1개의 Day는 남겨야 합니다."); return; }
+  const count = (planData.days[d] || []).length;
+  if (!confirm(`Day ${d}를 삭제할까요?${count ? ` (일정 ${count}개 포함)` : ""}`)) return;
+  delete planData.days[d];
+  // Day 번호 재정렬
+  const remaining = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
+  const newDays = {};
+  remaining.forEach((key, idx) => { newDays[idx+1] = planData.days[key]; });
+  planData.days = newDays;
+  currentDay = Math.min(currentDay, Object.keys(planData.days).length);
+  if (currentDay < 1) currentDay = 1;
+  renderDayTabs();
+  renderTimeline();
+  scheduleSave();
+  if (googleMapInstance) updateGoogleMapMarkers();
 }
 
 function addDay() {
@@ -817,7 +856,7 @@ function renderTimeline() {
   container.innerHTML = sorted.map((item, idx) => `
     <div class="timeline-item">
       <div class="timeline-dot-wrap">
-        <div class="timeline-dot">${idx+1}</div>
+        <div class="timeline-dot" style="cursor:pointer;" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}', '_blank')" title="Google Maps 길찾기">${idx+1}</div>
         ${idx < sorted.length-1 ? '<div class="timeline-line"></div>' : ""}
       </div>
       <div class="timeline-content">
@@ -825,9 +864,47 @@ function renderTimeline() {
         <div class="timeline-name">${item.name}</div>
         <div class="timeline-desc">${item.memo||""}</div>
       </div>
-      <button onclick="deletePlace(${currentDay},${item.id})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;">✕</button>
+      ${dayEditMode ? `
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button onclick="openAddModal(${item.id})" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700;font-family:inherit;">수정</button>
+          <button onclick="deletePlace(${currentDay},${item.id})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700;font-family:inherit;">삭제</button>
+        </div>
+      ` : ""}
     </div>
   `).join("");
+}
+
+let placeAutocomplete = null;
+
+function updateCoordStatus() {
+  const lat = document.getElementById("modalLat").value;
+  const lng = document.getElementById("modalLng").value;
+  const el  = document.getElementById("coordStatus");
+  if (!el) return;
+  if (lat && lng) {
+    el.innerHTML = `<span style="color:#34d399;">✅ 좌표 설정됨</span> <span style="color:var(--text-muted);">(${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)})</span>`;
+  } else {
+    el.innerHTML = `<span style="color:#f59e0b;">⚠️ 좌표 없음</span> <span style="color:var(--text-muted);">— Google Maps 연동 후 장소 검색 시 자동 입력됩니다</span>`;
+  }
+}
+
+function initPlaceAutocomplete() {
+  if (!window.google?.maps?.places) return;
+  const input = document.getElementById("modalName");
+  if (placeAutocomplete) google.maps.event.clearInstanceListeners(placeAutocomplete);
+  placeAutocomplete = new google.maps.places.Autocomplete(input, {
+    types: ["establishment", "geocode"],
+    fields: ["name", "geometry", "formatted_address"]
+  });
+  placeAutocomplete.addListener("place_changed", () => {
+    const place = placeAutocomplete.getPlace();
+    if (place?.geometry?.location) {
+      document.getElementById("modalLat").value = place.geometry.location.lat();
+      document.getElementById("modalLng").value = place.geometry.location.lng();
+      document.getElementById("modalName").value = place.name || input.value;
+      updateCoordStatus();
+    }
+  });
 }
 
 function openAddModal(itemId) {
@@ -848,7 +925,9 @@ function openAddModal(itemId) {
   } else {
     ["modalTime","modalName","modalLat","modalLng","modalMemo"].forEach(id => document.getElementById(id).value = "");
   }
+  updateCoordStatus();
   document.getElementById("addModal").classList.add("active");
+  setTimeout(() => initPlaceAutocomplete(), 100);
 }
 
 function closeModal() { document.getElementById("addModal").classList.remove("active"); }
@@ -922,33 +1001,37 @@ function postMemo() {
 // ================================================================
 let googleMapInstance = null;
 let gmMarkers = [];
+let gmPolyline = null;
+
+// Day별 마커/라인 컬러 테마
+const DAY_COLORS = [
+  { marker:"#2563eb", border:"#60a5fa", line:"#60a5fa" },
+  { marker:"#059669", border:"#34d399", line:"#34d399" },
+  { marker:"#d97706", border:"#fbbf24", line:"#fbbf24" },
+  { marker:"#9333ea", border:"#c084fc", line:"#c084fc" },
+  { marker:"#e11d48", border:"#fb7185", line:"#fb7185" },
+  { marker:"#0891b2", border:"#22d3ee", line:"#22d3ee" },
+];
+
+const GMAP_API_KEY = "AIzaSyA4_3OvP8rbcye4IHzZrj-W6Tga6GudylQ";
 
 function activateMap() {
-  const key = document.getElementById("apiKeyInput").value.trim();
-  if (!key) { alert("API 키를 입력해 주세요."); return; }
   const script = document.createElement("script");
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initGoogleMap`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_API_KEY}&libraries=places&callback=initGoogleMap`;
   script.async = true;
   document.head.appendChild(script);
   script.onerror = () => alert("API 키가 올바르지 않거나 Maps API가 활성화되지 않았습니다.");
-  localStorage.setItem("sydney_gmap_key", key);
 }
 
 window.initGoogleMap = function() {
-  document.getElementById("mapPlaceholder").style.display = "none";
+  const placeholder = document.getElementById("mapPlaceholder");
+  if (placeholder) placeholder.style.display = "none";
   const mapDiv = document.getElementById("googleMap");
   mapDiv.style.display = "block";
   googleMapInstance = new google.maps.Map(mapDiv, {
     center: { lat:-33.8568, lng:151.2153 },
     zoom: 13,
-    styles: [
-      { elementType:"geometry", stylers:[{color:"#1a2744"}] },
-      { elementType:"labels.text.stroke", stylers:[{color:"#0f172a"}] },
-      { elementType:"labels.text.fill",   stylers:[{color:"#94a3b8"}] },
-      { featureType:"road",  elementType:"geometry", stylers:[{color:"#1e293b"}] },
-      { featureType:"water", elementType:"geometry", stylers:[{color:"#0e4a8c"}] },
-      { featureType:"poi",   elementType:"labels",   stylers:[{visibility:"off"}] }
-    ]
+    streetViewControl: false
   });
   updateGoogleMapMarkers();
 };
@@ -957,30 +1040,50 @@ function updateGoogleMapMarkers() {
   if (!googleMapInstance||!planData) return;
   gmMarkers.forEach(m=>m.setMap(null));
   gmMarkers=[];
-  const items  = planData.days[currentDay]||[];
+  if (gmPolyline) { gmPolyline.setMap(null); gmPolyline = null; }
+
+  const c = DAY_COLORS[(currentDay - 1) % DAY_COLORS.length];
+  const items = (planData.days[currentDay]||[]).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
   const bounds = new google.maps.LatLngBounds();
-  const path   = [];
+  const path = [];
   items.forEach((item,idx)=>{
     if (!item.lat||!item.lng) return;
     const pos = {lat:parseFloat(item.lat),lng:parseFloat(item.lng)};
     const marker = new google.maps.Marker({
-      position:pos, map:googleMapInstance,
-      label:{text:String(idx+1),color:"#ffffff",fontWeight:"900",fontSize:"12px"},
-      title:item.name,
-      icon:{path:google.maps.SymbolPath.CIRCLE,scale:14,fillColor:"#1d4ed8",fillOpacity:1,strokeColor:"#38bdf8",strokeWeight:2}
+      position: pos, map: googleMapInstance, title: item.name,
+      label: { text:String(idx+1), color:"#fff", fontWeight:"900", fontSize:"12px" },
+      icon: { path:google.maps.SymbolPath.CIRCLE, scale:14, fillColor:c.marker, fillOpacity:1, strokeColor:c.border, strokeWeight:2.5 },
+      zIndex: idx+1
     });
-    const iw = new google.maps.InfoWindow({ content:`<strong>${item.name}</strong><br><span style="font-size:12px;color:#64748b;">${item.memo||""}</span>` });
+    const iw = new google.maps.InfoWindow({
+      content: `<div style="font-family:'Pretendard',sans-serif;padding:4px;">
+        <strong style="font-size:14px;">${item.name}</strong>
+        <br><span style="font-size:12px;color:#64748b;">${item.memo||""}</span>
+        <br><span style="font-size:11px;color:#94a3b8;">⏰ ${item.time||"--:--"}</span>
+      </div>`
+    });
     marker.addListener("click",()=>iw.open(googleMapInstance,marker));
     gmMarkers.push(marker);
     path.push(pos);
     bounds.extend(pos);
   });
   if (path.length>1) {
-    new google.maps.Polyline({path,map:googleMapInstance,strokeColor:"#38bdf8",strokeOpacity:0.8,strokeWeight:3});
-    googleMapInstance.fitBounds(bounds);
+    gmPolyline = new google.maps.Polyline({
+      path, map: googleMapInstance,
+      strokeColor: c.line, strokeOpacity: 0,
+      icons: [
+        { icon:{ path:"M 0,-1 0,1", strokeOpacity:0.7, strokeColor:c.line, strokeWeight:3, scale:4 }, offset:"0", repeat:"12px" },
+        { icon:{ path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale:4.5, fillColor:c.line, fillOpacity:1, strokeColor:"#0f172a", strokeWeight:1 }, offset:"100%", repeat:"0" },
+        { icon:{ path:google.maps.SymbolPath.FORWARD_OPEN_ARROW, scale:3, strokeColor:c.line, strokeOpacity:0.5, strokeWeight:2 }, offset:"50%", repeat:"120px" }
+      ]
+    });
+    googleMapInstance.fitBounds(bounds, { top:40, bottom:40, left:40, right:40 });
   } else if (path.length===1) {
     googleMapInstance.setCenter(path[0]);
-    googleMapInstance.setZoom(14);
+    googleMapInstance.setZoom(15);
+  } else {
+    googleMapInstance.setCenter({ lat:-33.8568, lng:151.2153 });
+    googleMapInstance.setZoom(13);
   }
 }
 

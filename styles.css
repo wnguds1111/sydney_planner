@@ -1082,7 +1082,7 @@ a { text-decoration: none; color: inherit; }
    ================================================================ */
 .itinerary-layout {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 420px;
   gap: 24px;
   align-items: start;
 }
@@ -1274,7 +1274,7 @@ a { text-decoration: none; color: inherit; }
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 500px;
+  max-width: 580px;
   overflow: hidden;
   box-shadow: 0 25px 60px rgba(0,0,0,0.5);
   animation: slideUp 0.25s;
@@ -1317,10 +1317,13 @@ a { text-decoration: none; color: inherit; }
   font-size: 14px;
   font-family: inherit;
   width: 100%;
+  box-sizing: border-box;
   transition: border-color 0.2s;
 }
 .form-input:focus { outline: none; border-color: var(--blue-sky); }
 .form-input::placeholder { color: var(--text-muted); }
+.form-input option { background: #1a2744; color: var(--white); }
+select.form-input { color: var(--white); }
 
 .btn-primary {
   width: 100%;
