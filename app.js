@@ -1383,7 +1383,7 @@ function renderExpenses() {
   }
   
   emptyEl.style.display = "none";
-  wrapEl.style.display  = "flex";
+  wrapEl.style.display  = "";
   
   const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
   

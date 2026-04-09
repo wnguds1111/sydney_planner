@@ -1618,6 +1618,23 @@ footer {
   0%, 100% { transform: translateY(0px) rotate(-3deg); }
   50%       { transform: translateY(-10px) rotate(3deg); }
 }
+@keyframes floatSway {
+  0% { transform: translateX(-10px) rotate(-3deg); }
+  50% { transform: translateX(10px) rotate(3deg); }
+  100% { transform: translateX(-10px) rotate(-3deg); }
+}
+
+/* ── Expense Split Layout ── */
+.expense-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 768px) {
+  .expense-split-layout {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* 히어로 배지 — 더 귀엽게 */
 .hero-badge {
