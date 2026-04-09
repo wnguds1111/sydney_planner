@@ -7,7 +7,7 @@ const COACH_DATA = {
     steps: [
       { target: "#panel-flight .btn-add-entry", emoji:"➕", text:"<b>항공권 추가</b> 버튼으로 직접 찾은 항공편 정보를 입력하세요." },
       { target: "#flightFilterBar", emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 필터</b>로 최적 일정을 확인하세요." },
-      { target: "#flightGrid", emoji:"✅", text:"<b>선택</b>을 누르면 해당 항공편으로 쇠돌이가 예약 진행해요." }
+      { target: "#flightGrid", pulse: ".btn-select", emoji:"✅", text:"<b>선택</b>을 누르면 해당 항공편으로 쇠돌이가 예약 진행해요." }
     ]
   },
   hotel: {
@@ -143,6 +143,14 @@ function updateSpotlight(targetSelector) {
     card.style.top = cardTop + 'px';
     card.style.left = cardLeft + 'px';
     card.style.margin = '0';
+
+    // Pulse effects
+    document.querySelectorAll(".coach-pulse").forEach(function(el) { el.classList.remove("coach-pulse"); });
+    const stepData = COACH_DATA[coachTab].steps[coachStep];
+    if (stepData.pulse) {
+      targetEl.querySelectorAll(stepData.pulse).forEach(function(el) { el.classList.add("coach-pulse"); });
+    }
+
   } else {
     // Center fallback
     spotlight.style.opacity = '0';
@@ -164,6 +172,7 @@ function coachPrev() { coachStep--; renderCoachMark(); }
 function closeCoachMark() {
   var o = document.getElementById("coachOverlay");
   if (o) o.classList.remove("active");
+  document.querySelectorAll(".coach-pulse").forEach(function(el) { el.classList.remove("coach-pulse"); });
 }
 
 // 페이지 로드 시 첫 탭 코치마크 자동 표시

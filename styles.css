@@ -2127,3 +2127,16 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   background: #38bdf8; color: #0f172a; box-shadow: 0 4px 10px rgba(56,189,248,0.3);
 }
 .coach-btn-next:hover { background: #bae6fd; }
+
+/* ── Target pulse animation ── */
+.coach-pulse {
+  animation: coachPulseAnim 1.2s infinite alternate !important;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.9) !important;
+  border-color: #38bdf8 !important;
+  z-index: 10000;
+  position: relative;
+}
+@keyframes coachPulseAnim {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+  100% { transform: scale(1.08); box-shadow: 0 0 25px rgba(56, 189, 248, 1); }
+}
