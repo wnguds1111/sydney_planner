@@ -140,38 +140,13 @@ function generateFloatingAnimals() {
   const container = document.createElement("div");
   container.className = "floating-animals-wrap";
   
-  const quokkaSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em">
-    <!-- Base Face -->
-    <path d="M 15 50 C 15 10, 85 10, 85 50 C 85 85, 65 95, 50 95 C 35 95, 15 85, 15 50 Z" fill="#8d6e63"/>
-    <!-- Muzzle / Lower Face Area -->
-    <path d="M 25 60 C 25 40, 75 40, 75 60 C 75 80, 60 90, 50 90 C 40 90, 25 80, 25 60 Z" fill="#d7ccc8"/>
-    <!-- Ears -->
-    <circle cx="20" cy="25" r="12" fill="#8d6e63" />
-    <circle cx="80" cy="25" r="12" fill="#8d6e63" />
-    <circle cx="20" cy="27" r="7" fill="#d7ccc8" />
-    <circle cx="80" cy="27" r="7" fill="#d7ccc8" />
-    <!-- Cheeks (Blush) -->
-    <circle cx="30" cy="65" r="7" fill="#ffcdd2" opacity="0.8"/>
-    <circle cx="70" cy="65" r="7" fill="#ffcdd2" opacity="0.8"/>
-    <!-- Eyes -->
-    <circle cx="35" cy="50" r="5" fill="#3e2723" />
-    <circle cx="65" cy="50" r="5" fill="#3e2723" />
-    <!-- Happy Eyes Glint -->
-    <circle cx="33" cy="48" r="2" fill="#fff" />
-    <circle cx="63" cy="48" r="2" fill="#fff" />
-    <!-- Cute Big Nose -->
-    <ellipse cx="50" cy="62" rx="7" ry="5" fill="#4e342e" />
-    <!-- Big Quokka Smile -->
-    <path d="M 38 72 Q 50 85 62 72" fill="none" stroke="#4e342e" stroke-width="3" stroke-linecap="round"/>
-    <path d="M 50 67 L 50 78" fill="none" stroke="#4e342e" stroke-width="3"/>
-  </svg>`;
-  const quokkaImg = `<img src="data:image/svg+xml;utf8,${encodeURIComponent(quokkaSvg)}" style="width:1em;height:1em;display:inline-block;">`;
-  
-  const emojis = [quokkaImg, "🐨"];
   let html = "";
-  for (let i = 0; i < 12; i++) {
-    const e = emojis[Math.floor(Math.random() * emojis.length)];
-    const size = 30 + Math.random() * 40; 
+  // 9개의 이미지가 각각 무작위 속도/위치로 하나씩 뜨게 생성
+  for (let i = 0; i < 9; i++) {
+    const animalId = i + 1;
+    // 에러 방지를 위해 alt 및 onerror 속성 추가 (이미지가 아직 없을 경우 투명 처리)
+    const imgHtml = `<img src="assets/animal${animalId}_nobg.png" style="width:100%; height:100%; display:block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));" onerror="this.style.opacity=0;">`;
+    const size = 60 + Math.random() * 30; // 60px ~ 90px 크기 랜덤
     
     // 좌우 사이드(2~12vw 또는 88~98vw)에만 배치하여 콘텐츠 영역 침범 방지
     const isLeft = Math.random() > 0.5;
@@ -179,7 +154,7 @@ function generateFloatingAnimals() {
     
     const duration = 20 + Math.random() * 30;
     const delay = Math.random() * -30;
-    html += `<div class="floating-animal" style="left:${left}vw; font-size:${size}px; animation-duration:${duration}s; animation-delay:${delay}s;">${e}</div>`;
+    html += `<div class="floating-animal" style="left:${left}vw; width:${size}px; height:${size}px; animation-duration:${duration}s; animation-delay:${delay}s;">${imgHtml}</div>`;
   }
   container.innerHTML = html;
   document.body.appendChild(container);
