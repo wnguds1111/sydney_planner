@@ -192,6 +192,7 @@ function switchTab(tab, btn) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("panel-" + tab).classList.add("active");
   btn.classList.add("active");
+  showCoachMark(tab);
 }
 
 // ================================================================

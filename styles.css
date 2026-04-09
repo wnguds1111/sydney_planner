@@ -2005,3 +2005,117 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
 
 /* ── glass-card::before 비활성화 (레이아웃 방해 방지) ── */
 .glass-card::before { display: none; }
+
+/* ================================================================
+   COACH MARKS
+   ================================================================ */
+#coachOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#coachOverlay.active {
+  opacity: 1; pointer-events: auto;
+}
+.coach-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(8px);
+}
+.coach-card {
+  position: relative;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  border-radius: 20px;
+  width: 90%; max-width: 420px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+  overflow: hidden;
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.coach-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.coach-title {
+  font-size: 16px; font-weight: 800; color: #fff;
+  display: flex; align-items: center; gap: 8px;
+}
+.coach-close {
+  background: none; border: none;
+  color: #94a3b8; font-size: 18px; cursor: pointer;
+  transition: color 0.2s;
+}
+.coach-close:hover { color: #fff; }
+.coach-body {
+  padding: 30px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 120px;
+}
+.coach-step-emoji {
+  font-size: 36px;
+  background: rgba(255,255,255,0.05);
+  width: 60px; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+}
+.coach-step-text {
+  font-size: 15px; line-height: 1.6; color: #cbd5e1;
+}
+.coach-step-text b { color: #fff; font-weight: 700; }
+.coach-footer {
+  padding: 16px 24px;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.coach-dots {
+  display: flex; gap: 6px; justify-content: center;
+}
+.coach-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.3s;
+}
+.coach-dot.active {
+  width: 20px; border-radius: 4px; background: #38bdf8;
+}
+.coach-actions {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.coach-btn-dismiss {
+  background: none; border: none;
+  color: #64748b; font-size: 12px; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 4px;
+}
+.coach-btn-dismiss:hover { color: #94a3b8; }
+.coach-btn-nav, .coach-btn-next {
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  border: none; transition: all 0.2s;
+}
+.coach-btn-nav {
+  background: rgba(255,255,255,0.1); color: #fff;
+}
+.coach-btn-nav:hover { background: rgba(255,255,255,0.15); }
+.coach-btn-next {
+  background: #38bdf8; color: #0f172a; box-shadow: 0 4px 10px rgba(56,189,248,0.3);
+}
+.coach-btn-next:hover { background: #bae6fd; }
