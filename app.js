@@ -1308,6 +1308,7 @@ function openExpenseModal(id = null) {
     if (!ex) return;
     document.getElementById("expenseModalTitle").textContent = "💸 지출 수정";
     document.getElementById("editExpenseId").value = ex.id;
+    document.querySelector(`input[name="expenseTiming"][value="${ex.timing || 'pre'}"]`).checked = true;
     document.getElementById("expenseCategory").value = ex.category || "기타";
     document.getElementById("expenseTitle").value  = ex.title || "";
     document.getElementById("expenseAmount").value = ex.amount || "";
@@ -1315,6 +1316,7 @@ function openExpenseModal(id = null) {
   } else {
     document.getElementById("expenseModalTitle").textContent = "💸 지출 등록";
     document.getElementById("editExpenseId").value = "";
+    document.querySelector('input[name="expenseTiming"][value="pre"]').checked = true;
     document.getElementById("expenseCategory").value = "식비";
     document.getElementById("expenseTitle").value  = "";
     document.getElementById("expenseAmount").value = "";
@@ -1328,6 +1330,7 @@ function closeExpenseModal() {
 
 function saveExpense() {
   const id    = document.getElementById("editExpenseId").value;
+  const timing = document.querySelector('input[name="expenseTiming"]:checked').value;
   const cat   = document.getElementById("expenseCategory").value;
   const title = document.getElementById("expenseTitle").value.trim();
   const amt   = parseFloat(document.getElementById("expenseAmount").value);
@@ -1339,10 +1342,10 @@ function saveExpense() {
   if (id) {
     const idx = planData.expenses.findIndex(e => e.id === id);
     if (idx !== -1) {
-      planData.expenses[idx] = { ...planData.expenses[idx], category: cat, title: title, amount: amt, memo: memo };
+      planData.expenses[idx] = { ...planData.expenses[idx], timing: timing, category: cat, title: title, amount: amt, memo: memo };
     }
   } else {
-    planData.expenses.push({ id: "ex_" + Date.now(), category: cat, title: title, amount: amt, memo: memo });
+    planData.expenses.push({ id: "ex_" + Date.now(), timing: timing, category: cat, title: title, amount: amt, memo: memo });
   }
   scheduleSave();
   closeExpenseModal();
@@ -1359,48 +1362,56 @@ function deleteExpense(id) {
 function renderExpenses() {
   if (!planData || !planData.expenses) return;
   const emptyEl  = document.getElementById("expenseEmptyState");
-  const gridEl   = document.getElementById("expenseGrid");
+  const wrapEl   = document.getElementById("expenseWrap");
+  const preGrid  = document.getElementById("expensePreGrid");
+  const tripGrid = document.getElementById("expenseTripGrid");
   const list = planData.expenses;
   
   // Update Summary
   let totalAud = list.reduce((acc, curr) => acc + curr.amount, 0);
-  let totalKrw = totalAud * exchangeRateAudToKrw;
+  let totalPreKrw = list.filter(e => e.timing === "pre").reduce((acc, curr) => acc + curr.amount, 0) * exchangeRateAudToKrw;
+  let totalTripKrw = list.filter(e => e.timing !== "pre").reduce((acc, curr) => acc + curr.amount, 0) * exchangeRateAudToKrw;
   
   document.getElementById("summaryTotalAud").textContent = `A$ ${fmtPrice(totalAud)}`;
-  document.getElementById("summaryTotalKrw").textContent = `₩ ${fmtPrice(totalKrw)}`;
+  document.getElementById("summaryPreKrw").textContent = `₩ ${fmtPrice(totalPreKrw)}`;
+  document.getElementById("summaryTripKrw").textContent = `₩ ${fmtPrice(totalTripKrw)}`;
   
   if (list.length === 0) {
     emptyEl.style.display = "flex";
-    gridEl.style.display  = "none";
+    wrapEl.style.display  = "none";
     return;
   }
   
   emptyEl.style.display = "none";
-  gridEl.style.display  = "flex";
-  gridEl.style.flexDirection = "column";
-  gridEl.style.gap = "12px";
+  wrapEl.style.display  = "flex";
   
   const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
   
-  gridEl.innerHTML = list.map(e => {
-    const krwEst = e.amount * exchangeRateAudToKrw;
-    return `
-    <div class="glass-card fc-row" id="ex-${e.id}">
-      <div class="fc-header" style="align-items:center;">
-        <div class="fc-header-left">
-          <div class="fc-airline-name" style="font-size:16px;">${CAT_EMOJI[e.category] || "📦"} ${e.title}</div>
-          ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
-        </div>
-        <div class="fc-header-right" style="text-align:right;">
-          <div class="fc-price" style="color:#fdba74;">A$ ${fmtPrice(e.amount)}</div>
-          <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">약 ₩ ${fmtPrice(krwEst)}</div>
-          <div class="fc-actions" style="justify-content:flex-end;">
-            <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
-            <button class="btn-action del" onclick="deleteExpense('${e.id}')" title="삭제">🗑</button>
+  function makeHtml(arr) {
+    if (arr.length === 0) return `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed rgba(255,255,255,0.1);">내역이 없습니다.</div>`;
+    return arr.map(e => {
+      const krwEst = e.amount * exchangeRateAudToKrw;
+      return `
+      <div class="glass-card fc-row" id="ex-${e.id}">
+        <div class="fc-header" style="align-items:center;">
+          <div class="fc-header-left">
+            <div class="fc-airline-name" style="font-size:16px;">${CAT_EMOJI[e.category] || "📦"} ${e.title}</div>
+            ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
+          </div>
+          <div class="fc-header-right" style="text-align:right;">
+            <div class="fc-price" style="color:#fdba74;">A$ ${fmtPrice(e.amount)}</div>
+            <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">약 ₩ ${fmtPrice(krwEst)}</div>
+            <div class="fc-actions" style="justify-content:flex-end;">
+              <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
+              <button class="btn-action del" onclick="deleteExpense('${e.id}')" title="삭제">🗑</button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>`;
-  }).join("");
+      </div>`;
+    }).join("");
+  }
+
+  preGrid.innerHTML = makeHtml(list.filter(e => e.timing === "pre"));
+  tripGrid.innerHTML = makeHtml(list.filter(e => e.timing !== "pre"));
 }
 
