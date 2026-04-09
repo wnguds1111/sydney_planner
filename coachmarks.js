@@ -7,8 +7,7 @@ const COACH_DATA = {
     steps: [
       { target: "#panel-flight .btn-add-entry", emoji:"➕", text:"<b>항공권 추가</b> 버튼으로 직접 찾은 항공편 정보를 입력하세요." },
       { target: "#flightFilterBar", emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 필터</b>로 최적 일정을 확인하세요." },
-      { target: "#flightSummaryBanner", emoji:"💰", text:"상단 요약에서 <b>최저가 정보</b>를 한눈에 확인할 수 있어요." },
-      { target: "#flightGrid", emoji:"🔗", text:"비교 리스트에서 <b>예약하기</b>를 누르면 항공사 사이트로 바로 이동해요." }
+      { target: "#flightGrid", emoji:"✅", text:"<b>선택</b>을 누르면 해당 항공편으로 쇠돌이가 예약 진행해요." }
     ]
   },
   hotel: {
