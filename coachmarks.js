@@ -48,18 +48,17 @@ const COACH_DATA = {
 let coachStep = 0;
 let coachTab = "";
 
-function isCoachDismissedToday(tab) {
-  const val = localStorage.getItem("coach_dismiss_" + tab);
-  return val === new Date().toISOString().slice(0, 10);
+function isCoachDismissed(tab) {
+  return localStorage.getItem("coach_dismiss_" + tab) === "true";
 }
 
-function dismissCoachToday(tab) {
-  localStorage.setItem("coach_dismiss_" + tab, new Date().toISOString().slice(0, 10));
+function dismissCoach(tab) {
+  localStorage.setItem("coach_dismiss_" + tab, "true");
   closeCoachMark();
 }
 
 function showCoachMark(tab) {
-  if (!COACH_DATA[tab] || isCoachDismissedToday(tab)) return;
+  if (!COACH_DATA[tab] || isCoachDismissed(tab)) return;
   coachTab = tab;
   coachStep = 0;
   renderCoachMark();
@@ -101,7 +100,7 @@ function renderCoachMark() {
       '<div class="coach-footer">' +
         '<div class="coach-dots">' + dots + '</div>' +
         '<div class="coach-actions">' +
-          '<button class="coach-btn-dismiss" onclick="dismissCoachToday(\'' + coachTab + '\')">오늘 하루 안보기</button>' +
+          '<button class="coach-btn-dismiss" onclick="dismissCoach(\'' + coachTab + '\')">이 PC에서 다신 안 보기</button>' +
           '<div style="display:flex;gap:6px;">' + prevBtn + nextBtn + '</div>' +
         '</div>' +
       '</div>' +
