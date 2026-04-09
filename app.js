@@ -1383,11 +1383,13 @@ function renderExpenses() {
   }
   
   emptyEl.style.display = "none";
-  wrapEl.style.display  = "";
+  wrapEl.style.display  = "grid";
+  wrapEl.style.gridTemplateColumns = "repeat(auto-fit, minmax(300px, 1fr))";
+  wrapEl.style.gap = "24px";
   
   const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
   
-  function makeHtml(arr) {
+  function makeHtml(arr, priceColor) {
     if (arr.length === 0) return `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed rgba(255,255,255,0.1);">내역이 없습니다.</div>`;
     return arr.map(e => {
       const krwEst = e.amount * exchangeRateAudToKrw;
@@ -1399,7 +1401,7 @@ function renderExpenses() {
             ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
           </div>
           <div class="fc-header-right" style="text-align:right;">
-            <div class="fc-price" style="color:#fdba74;">A$ ${fmtPrice(e.amount)}</div>
+            <div class="fc-price" style="color:${priceColor};">A$ ${fmtPrice(e.amount)}</div>
             <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">약 ₩ ${fmtPrice(krwEst)}</div>
             <div class="fc-actions" style="justify-content:flex-end;">
               <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
@@ -1411,7 +1413,7 @@ function renderExpenses() {
     }).join("");
   }
 
-  preGrid.innerHTML = makeHtml(list.filter(e => e.timing === "pre"));
-  tripGrid.innerHTML = makeHtml(list.filter(e => e.timing !== "pre"));
+  preGrid.innerHTML = makeHtml(list.filter(e => e.timing === "pre"), "#fbbf24");
+  tripGrid.innerHTML = makeHtml(list.filter(e => e.timing !== "pre"), "#a78bfa");
 }
 
