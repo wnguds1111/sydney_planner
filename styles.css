@@ -2416,3 +2416,103 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   .fc-actions { margin-top: 0; }
   .fc-summary-text { font-size: 13px; }
 }
+
+/* ================================================================
+   MOBILE QA FIX PATCH
+   ================================================================ */
+@media (max-width: 768px) {
+
+  /* ── itinerary: map stacks above sidebar ── */
+  .itinerary-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .map-placeholder {
+    height: 260px !important;
+  }
+
+  /* ── checklist: 1-column ── */
+  .checklist-layout {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── tour grid: 1-column ── */
+  #tourGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── expense rows ── */
+  .expense-row, .pre-expense-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .expense-summary-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  #expenseSummaryBanner {
+    flex-wrap: wrap !important;
+  }
+
+  /* ── section heading: keep button on same row but smaller ── */
+  .section-heading {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-add-entry {
+    font-size: 11px !important;
+    padding: 8px 14px !important;
+  }
+
+  /* ── modal grid columns override (inline style grids) ── */
+  .modal-body {
+    padding: 16px !important;
+  }
+
+  /* ── fc-price: prevent overflow on small screens ── */
+  .fc-price {
+    font-size: 18px !important;
+    white-space: nowrap;
+  }
+
+  /* ── tour card action area ── */
+  .tc-card-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* ── itinerary sidebar timeline ── */
+  #timelineList {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  /* ── day tabs mini: horizontal scroll ── */
+  .day-tabs-mini {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    display: flex;
+    gap: 6px;
+  }
+  .day-tabs-mini::-webkit-scrollbar { display: none; }
+
+  /* ── prevent text overflow in cards ── */
+  .hc-card-name,
+  .fc-summary-text {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* ── hero badge wrap ── */
+  .hero-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90vw;
+  }
+}
