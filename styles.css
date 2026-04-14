@@ -2189,3 +2189,8 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   90% { opacity: 1; }
   100% { transform: translateY(-120vh) rotate(-25deg); opacity: 0; }
 }
+
+.btn-select { padding: 9px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); color: var(--text-sub); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.btn-select:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+.btn-select.selected-active { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--green); }
+.glass-card.selected { border-color: rgba(16,185,129,0.4); box-shadow: 0 0 20px rgba(16,185,129,0.2); }
