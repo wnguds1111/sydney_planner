@@ -158,6 +158,30 @@ function generateFloatingAnimals() {
   }
   container.innerHTML = html;
   document.body.appendChild(container);
+
+  // Initialize toggle state
+  const isOff = localStorage.getItem("quokkaMode") === "off";
+  if (isOff) {
+    container.classList.add("hidden");
+    const btn = document.getElementById("btnQuokkaToggle");
+    if (btn) btn.innerHTML = "쿼둥이 OFF 💤";
+  }
+}
+
+function toggleQuokkas() {
+  const container = document.querySelector(".floating-animals-wrap");
+  const btn = document.getElementById("btnQuokkaToggle");
+  if (!container || !btn) return;
+  
+  if (container.classList.contains("hidden")) {
+    container.classList.remove("hidden");
+    btn.innerHTML = "쿼둥이 ON 🐻";
+    localStorage.setItem("quokkaMode", "on");
+  } else {
+    container.classList.add("hidden");
+    btn.innerHTML = "쿼둥이 OFF 💤";
+    localStorage.setItem("quokkaMode", "off");
+  }
 }
 
 // ─── Countdown ───
@@ -221,7 +245,6 @@ function switchTab(tab, btn) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("panel-" + tab).classList.add("active");
   btn.classList.add("active");
-  showCoachMark(tab);
 }
 
 // ================================================================
@@ -527,16 +550,19 @@ function openHotelModal(id) {
   const h = planData.hotels.find(x => x.id === id);
   document.getElementById("hotelEditId").value = id || "";
   document.getElementById("hotelModalTitle").textContent = id ? "🏨 호텔 수정" : "🏨 호텔 추가";
+  
+  const cityVal = h?.city || "sydney";
+  const cityRadio = document.querySelector(`input[name="hm_city"][value="${cityVal}"]`);
+  if (cityRadio) cityRadio.checked = true;
+
+  document.getElementById("hm_checkin").value = h?.checkin || "";
+  document.getElementById("hm_checkout").value = h?.checkout || "";
+  
   document.getElementById("hm_name").value    = h?.name    || "";
-  document.getElementById("hm_area").value    = h?.area    || "circular";
-  document.getElementById("hm_stars").value   = h?.stars   || "4";
   document.getElementById("hm_price").value   = h?.price   || "";
   document.getElementById("hm_tag").value     = h?.tag     || "";
   document.getElementById("hm_desc").value    = h?.desc    || "";
-  document.getElementById("hm_agoda").value   = h?.agoda   || "";
-  document.getElementById("hm_booking").value = h?.booking || "";
-  document.getElementById("hm_yanolya").value = h?.yanolya || "";
-  document.getElementById("hm_gmap").value    = h?.gmap    || "";
+  document.getElementById("hm_link").value    = h?.link    || "";
   document.getElementById("hm_memo").value    = h?.memo    || "";
   document.getElementById("hotelModal").classList.add("active");
 }
@@ -549,18 +575,19 @@ function saveHotel() {
   const existingId = document.getElementById("hotelEditId").value;
   const existing   = planData.hotels.find(x => x.id === existingId);
 
+  const cityRadio = document.querySelector('input[name="hm_city"]:checked');
+  const city = cityRadio ? cityRadio.value : "sydney";
+
   const entry = {
     id:      existingId || String(Date.now()),
     name,
-    area:    document.getElementById("hm_area").value,
-    stars:   parseInt(document.getElementById("hm_stars").value),
+    city,
+    checkin: document.getElementById("hm_checkin").value,
+    checkout: document.getElementById("hm_checkout").value,
     price:   parseInt(document.getElementById("hm_price").value) || 0,
     tag:     document.getElementById("hm_tag").value,
     desc:    document.getElementById("hm_desc").value.trim(),
-    agoda:   document.getElementById("hm_agoda").value.trim(),
-    booking: document.getElementById("hm_booking").value.trim(),
-    yanolya: document.getElementById("hm_yanolya").value.trim(),
-    gmap:    document.getElementById("hm_gmap").value.trim(),
+    link:    document.getElementById("hm_link").value.trim(),
     memo:    document.getElementById("hm_memo").value.trim(),
     selected: existing?.selected || false
   };
@@ -596,45 +623,60 @@ function filterHotels(area, btn) {
   btn.classList.add("active");
   renderHotels();
 }
-function sortHotels(by) {
+function sortHotels(by, btn) {
   hotelSort = by;
+  if(btn) {
+    document.getElementById("hotelFilterBar")
+      .querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+  }
   renderHotels();
 }
 
 function renderHotels() {
   if (!planData) return;
   const emptyEl  = document.getElementById("hotelEmptyState");
-  const gridEl   = document.getElementById("hotelGrid");
+  const wrapEl   = document.getElementById("hotelWrap");
+  const sydGrid  = document.getElementById("hotelGridSydney");
+  const perthGrid= document.getElementById("hotelGridPerth");
+  const sydSec   = document.getElementById("sydneySection");
+  const perthSec = document.getElementById("perthSection");
   const bannerEl = document.getElementById("hotelSummaryBanner");
 
   let list = [...planData.hotels];
-  if (hotelFilter !== "all") list = list.filter(h => h.area === hotelFilter);
-  if (hotelSort === "price") list.sort((a,b) => (a.price||Infinity) - (b.price||Infinity));
-  if (hotelSort === "star")  list.sort((a,b) => (b.stars||0) - (a.stars||0));
+  if (hotelFilter !== "all" && hotelFilter !== "default") list = list.filter(h => h.area === hotelFilter);
+  if (hotelSort === "price_asc" || hotelSort === "price") list.sort((a,b) => (a.price||Infinity) - (b.price||Infinity));
+  if (hotelSort === "price_desc") list.sort((a,b) => (b.price||0) - (a.price||0));
 
   if (planData.hotels.length === 0) {
     emptyEl.style.display  = "flex";
-    gridEl.style.display   = "none";
-    bannerEl.style.display = "none";
+    if(wrapEl) wrapEl.style.display = "none";
+    if(bannerEl) bannerEl.style.display = "none";
     return;
   }
 
   emptyEl.style.display  = "none";
-  gridEl.style.display   = "grid";
-  if (bannerEl) bannerEl.style.display = "none"; // 배너 숨김
+  if(wrapEl) wrapEl.style.display = "flex";
+  if(bannerEl) bannerEl.style.display = "none";
 
-  gridEl.innerHTML = list.map(h => {
-    const stars     = "⭐".repeat(h.stars || 0);
-    const areaLbl   = AREA_LABELS[h.area] || h.area;
+  const renderCard = (h) => {
     const tagLabels = { best:"👑 BEST", value:"💚 가성비", pick:"⭐ 내 픽" };
     const tagHtml   = h.tag ? `<div class="hc-tag ${h.tag}">${tagLabels[h.tag]||""}</div>` : "";
     const memoHtml  = h.memo ? `<div class="hc-card-memo">💬 ${h.memo}</div>` : "";
     const descHtml  = h.desc ? `<div class="hc-card-desc">${h.desc}</div>` : "";
     const isSelected = h.selected || false;
+    
+    // Calculate dates
+    let datesHtml = "";
+    if (h.checkin || h.checkout) {
+      const ci = h.checkin ? h.checkin.substring(5).replace("-", "/") : "?";
+      const co = h.checkout ? h.checkout.substring(5).replace("-", "/") : "?";
+      datesHtml = `<div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">🗓️ ${ci} ~ ${co}</div>`;
+    }
 
     const mkLink = (url, cls, label) => url
-      ? `<a class="btn-link-sm ${cls}" href="${url}" target="_blank">${label}</a>`
-      : `<span class="btn-link-sm nolink">${label}</span>`;
+      ? `<a class="btn-link-sm ${cls}" href="${url}" target="_blank" style="padding: 8px 16px; border-radius: 8px; font-size: 13px; text-align: center; width: 100%; display:block; box-sizing:border-box;">${label}</a>`
+      : "";
 
     return `
     <div class="glass-card hc-card ${isSelected ? 'selected' : ''}">
@@ -642,8 +684,8 @@ function renderHotels() {
       <div class="hc-card-top">
         <div class="hc-card-header">
           <div>
-            <div class="hc-card-name">${h.name}</div>
-            <div class="hc-card-stars">${stars}</div>
+            ${datesHtml}
+            <div class="hc-card-name" style="margin-bottom:0px;">${h.name}</div>
           </div>
           <div class="hc-card-actions">
             <button class="btn-select ${isSelected ? 'selected-active' : ''}" onclick="selectHotel('${h.id}')">
@@ -653,22 +695,27 @@ function renderHotels() {
             <button class="btn-action del" onclick="deleteHotel('${h.id}')" title="삭제">🗑</button>
           </div>
         </div>
-        <div class="hc-card-location">📍 ${areaLbl}</div>
-        <div class="hc-card-price">
+        <div class="hc-card-price" style="margin-top:12px;">
           <div class="hc-price-num">${h.price ? fmtPrice(h.price) : "-"}</div>
           <div class="hc-price-unit">원 / 박</div>
         </div>
         ${descHtml}
         ${memoHtml}
       </div>
-      <div class="hc-card-links">
-        ${mkLink(h.agoda,   "agoda",   "Agoda")}
-        ${mkLink(h.booking, "booking", "Booking")}
-        ${mkLink(h.yanolya, "yanolya", "야놀자")}
-        ${mkLink(h.gmap,    "gmap",    "🗺 지도")}
-      </div>
+      ${h.link ? `<div class="hc-card-links">
+        ${mkLink(h.link, "agoda", "🔗 호텔 예약 링크 이동")}
+      </div>` : ""}
     </div>`;
-  }).join("");
+  };
+
+  const sydList = list.filter(h => !h.city || h.city === 'sydney');
+  const perthList = list.filter(h => h.city === 'perth');
+
+  if (sydSec) sydSec.style.display = sydList.length > 0 ? "block" : "none";
+  if (perthSec) perthSec.style.display = perthList.length > 0 ? "block" : "none";
+
+  if (sydGrid) sydGrid.innerHTML = sydList.map(renderCard).join("");
+  if (perthGrid) perthGrid.innerHTML = perthList.map(renderCard).join("");
 }
 
 // ================================================================

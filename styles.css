@@ -2194,3 +2194,162 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
 .btn-select:hover { background: rgba(255,255,255,0.1); color: var(--white); }
 .btn-select.selected-active { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--green); }
 .glass-card.selected { border-color: rgba(16,185,129,0.4); box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+
+.floating-animals-wrap { transition: opacity 0.5s; }
+.floating-animals-wrap.hidden { opacity: 0; }
+.btn-quokka-toggle { position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.4); color: white; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; z-index: 100; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.btn-quokka-toggle:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+
+/* ================================================================
+   MOBILE RESPONSIVE — 768px 이하
+   ================================================================ */
+@media (max-width: 768px) {
+
+  /* ── Hero ── */
+  .hero {
+    padding: 50px 16px 36px;
+    min-height: 220px;
+  }
+  .hero-title {
+    font-size: clamp(22px, 7vw, 36px);
+    letter-spacing: -0.5px;
+  }
+  .hero-sub { font-size: 13px; margin-bottom: 16px; }
+  .hero-countdown {
+    gap: 6px;
+    padding: 10px 14px;
+    flex-wrap: nowrap;
+  }
+  .countdown-item { min-width: 38px; }
+  .countdown-num { font-size: 20px; }
+  .countdown-lbl { font-size: 9px; }
+  .countdown-sep { font-size: 18px; }
+  .btn-quokka-toggle { right: 10px; top: 10px; font-size: 11px; padding: 5px 10px; }
+
+  /* ── Tabs ── */
+  .tabs-bar {
+    gap: 2px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tab-btn .tab-icon { font-size: 14px; }
+
+  /* ── Main Container ── */
+  .main-container { padding: 20px 12px 60px; }
+
+  /* ── Section Heading ── */
+  .section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-title { font-size: 18px; }
+
+  /* ── Summary Banner ── */
+  .summary-banner {
+    padding: 12px 16px;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .summary-item { min-width: 80px; padding: 0 12px; }
+  .summary-val { font-size: 16px; }
+
+  /* ── Filter Bar ── */
+  .filter-bar {
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip { flex-shrink: 0; font-size: 11px; padding: 6px 12px; }
+
+  /* ── Flight Cards ── */
+  .flight-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+  .flight-airline { flex-direction: row; gap: 10px; align-items: center; }
+  .flight-price { font-size: 20px; }
+  .flight-price-section { align-items: flex-start; }
+
+  /* ── Hotel Cards ── */
+  .hotel-compare-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hc-card { padding: 16px !important; }
+  .hc-card-name { font-size: 15px !important; }
+  .hc-card-header { flex-direction: column; gap: 10px; }
+  .hc-card-actions { width: 100%; justify-content: flex-end; }
+  .hc-price-num { font-size: 20px !important; }
+
+  /* ── Modal ── */
+  .modal-box {
+    max-width: 100% !important;
+    margin: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-body > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Checklist ── */
+  #checklistLayout {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Itinerary ── */
+  .map-split-view {
+    flex-direction: column !important;
+  }
+  #googleMap {
+    height: 260px !important;
+    min-height: 260px !important;
+  }
+  #dayTabsMini {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #dayTabsMini::-webkit-scrollbar { display: none; }
+
+  /* ── Expense ── */
+  .expense-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .expense-split {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  /* ── Footer ── */
+  footer { font-size: 11px; padding: 16px 12px; }
+
+  /* ── Floating animals (hide on mobile for perf) ── */
+  .floating-animals-wrap { display: none !important; }
+  .btn-quokka-toggle { display: none !important; }
+}
+
+/* ── 아주 작은 화면 (360px 이하) ── */
+@media (max-width: 400px) {
+  .hero-title { font-size: 20px; }
+  .tab-btn { padding: 6px 10px; font-size: 10px; }
+  .hc-card-actions { gap: 4px; }
+}
