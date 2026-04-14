@@ -5,9 +5,9 @@ const COACH_DATA = {
   flight: {
     icon: "✈️", title: "항공권 비교 가이드",
     steps: [
-      { target: "#panel-flight .btn-add-entry", emoji:"➕", text:"<b>항공권 추가</b> 버튼으로 직접 찾은 항공편 정보를 입력하세요." },
-      { target: "#flightFilterBar", emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 필터</b>로 최적 일정을 확인하세요." },
-      { target: "#flightGrid", pulse: ".btn-select", emoji:"✅", text:"<b>선택</b>을 누르면 해당 항공편으로 쇠돌이가 예약 진행해요." }
+      { target: "#panel-flight .btn-add-entry", emoji:"📸", text:"<b>항공권 추가</b> 버튼을 누르고 캡쳐한 이미지를 <b>'복사/붙여넣기(Ctrl+V)'</b>해서 쉽게 일정을 등록해보세요!" },
+      { target: "#flightFilterBar", emoji:"🗓", text:"<b>출발일순 정렬</b>과 <b>연차 5, 6, 7일 필터</b>로 내 휴가에 맞는 최적의 일정을 찾아보세요." },
+      { target: "#flightGrid", pulse: ".btn-select", emoji:"✅", text:"카드에서 전체 여정과 예약 링크 등 <b>요약 정보</b>를 한눈에 비교하고 <b>선택</b>하세요." }
     ]
   },
   hotel: {
