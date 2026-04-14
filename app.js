@@ -228,25 +228,85 @@ function switchTab(tab, btn) {
 //  FLIGHT — CRUD + Render
 // ================================================================
 
+// ── Image Upload (Base64) ──
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const MAX_WIDTH = 1400; // 최대 너비 대폭 증가 (레티나 해상도 지원)
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX_WIDTH) {
+        height = Math.round(height * MAX_WIDTH / width);
+        width = MAX_WIDTH;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      // 안티앨리어싱 품질 높임
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // 품질도 0.9로 상향 조정해 깨짐 방지
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+      document.getElementById("fm_image_base64").value = dataUrl;
+      document.getElementById("imagePreviewArea").innerHTML = `<img src="${dataUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">`;
+      document.getElementById("imagePreviewArea").style.borderColor = "rgba(255,255,255,0.1)";
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleImagePaste(e) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf("image") !== -1) {
+      const file = items[i].getAsFile();
+      handleImageUpload({ target: { files: [file] } });
+      e.preventDefault();
+      break;
+    }
+  }
+}
+
 // ── Modal Open/Close ──
 function openFlightModal(id) {
   const f = planData.flights.find(x => x.id === id);
   document.getElementById("flightEditId").value = id || "";
-  document.getElementById("flightModalTitle").textContent = id ? "✈️ 항공권 수정" : "✈️ 항공권 추가";
-  document.getElementById("fm_airline").value  = "아시아나항공";
-  document.getElementById("fm_depdate").value  = f?.depdate  || "";
-  document.getElementById("fm_dep").value      = f?.dep      || "";
-  document.getElementById("fm_arr").value      = f?.arr      || "";
-  document.getElementById("fm_depCode").value  = f?.depCode  || "ICN";
-  document.getElementById("fm_arrCode").value  = f?.arrCode  || "SYD";
-  document.getElementById("fm_dur").value      = "10시간 20분";
-  document.getElementById("fm_rdep").value     = f?.rdep     || "";
-  document.getElementById("fm_rarr").value     = f?.rarr     || "";
-  document.getElementById("fm_rdur").value     = "10시간 20분";
-  document.getElementById("fm_rdate").value    = f?.rdate    || "";
+  document.getElementById("flightModalTitle").textContent = id ? "✈️ 항공 일정 수정" : "✈️ 항공 일정 추가";
+  document.getElementById("fm_airline") ? document.getElementById("fm_airline").value  = f?.airline || "아시아나항공" : null;
   document.getElementById("fm_price").value    = f?.price    || "";
-  document.getElementById("fm_class").value    = f?.cls      || "이코노미";
-  document.getElementById("fm_memo").value     = f?.memo     || "";
+  if(document.getElementById("fm_class")) document.getElementById("fm_class").value    = f?.cls      || "이코노미";
+  
+  const imageUrl = f?.imageUrl || "";
+  if(document.getElementById("fm_image_base64")) document.getElementById("fm_image_base64").value = imageUrl;
+  const preview = document.getElementById("imagePreviewArea");
+  if(preview) {
+    if(imageUrl) {
+      preview.innerHTML = `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">`;
+      preview.style.borderColor = "rgba(255,255,255,0.1)";
+    } else {
+      preview.innerHTML = `<span style="color:var(--text-sub); pointer-events:none; font-weight:600; text-align:center;">+ 클릭, 드래그 또는<br>영역 선택 후 Ctrl+V (붙여넣기)</span>`;
+      preview.style.borderColor = "rgba(255,255,255,0.2)";
+    }
+  }
+
+  if(document.getElementById("fm_sydney_days")) document.getElementById("fm_sydney_days").value = f?.sydneyDays || "";
+  if(document.getElementById("fm_perth_days")) document.getElementById("fm_perth_days").value = f?.perthDays || "";
+  if(document.getElementById("fm_total_nights")) document.getElementById("fm_total_nights").value = f?.totalNights || "";
+  if(document.getElementById("fm_total_days")) document.getElementById("fm_total_days").value = f?.totalDays || "";
+  if(document.getElementById("fm_link")) document.getElementById("fm_link").value = f?.link || "";
+  if(document.getElementById("fm_depdate")) document.getElementById("fm_depdate").value = f?.depdate || "";
+  if(document.getElementById("fm_rdate")) document.getElementById("fm_rdate").value = f?.rdate || "";
+  document.getElementById("fm_memo").value     = f?.memo || "";
+  
   // 연차 라디오 세팅
   const annualVal = f?.annualLeave || "";
   document.querySelectorAll('input[name="fm_annual"]').forEach(r => r.checked = (r.value === annualVal));
@@ -257,33 +317,27 @@ function closeFlightModal() { document.getElementById("flightModal").classList.r
 
 // ── Save Flight ──
 function saveFlight() {
-  const airline = document.getElementById("fm_airline").value.trim();
   const price   = parseInt(document.getElementById("fm_price").value) || 0;
-  if (!airline) { alert("항공사명를 입력해 주세요."); return; }
 
   const existingId = document.getElementById("flightEditId").value;
   const existing   = planData.flights.find(x => x.id === existingId);
 
   const entry = {
     id:      existingId || String(Date.now()),
-    airline,
-    depdate: document.getElementById("fm_depdate").value,
-    dep:     document.getElementById("fm_dep").value,
-    arr:     document.getElementById("fm_arr").value,
-    depCode: document.getElementById("fm_depCode").value.trim() || "ICN",
-    arrCode: document.getElementById("fm_arrCode").value.trim() || "SYD",
-    dur:     "10시간 20분",
-    // 오는 편
-    rdep:    document.getElementById("fm_rdep").value,
-    rarr:    document.getElementById("fm_rarr").value,
-    rdur:    "10시간 20분",
-    rdate:   document.getElementById("fm_rdate").value,
+    airline: document.getElementById("fm_airline") ? document.getElementById("fm_airline").value.trim() : "",
     price,
-    cls:         document.getElementById("fm_class").value.trim() || "이코노미",
+    cls:         document.getElementById("fm_class") ? document.getElementById("fm_class").value.trim() : "이코노미",
+    imageUrl:    document.getElementById("fm_image_base64") ? document.getElementById("fm_image_base64").value.trim() : "",
+    depdate:     document.getElementById("fm_depdate") ? document.getElementById("fm_depdate").value : "",
+    rdate:       document.getElementById("fm_rdate") ? document.getElementById("fm_rdate").value : "",
+    sydneyDays:  document.getElementById("fm_sydney_days") ? document.getElementById("fm_sydney_days").value.trim() : "",
+    perthDays:   document.getElementById("fm_perth_days") ? document.getElementById("fm_perth_days").value.trim() : "",
+    totalNights: document.getElementById("fm_total_nights") ? document.getElementById("fm_total_nights").value.trim() : "",
+    totalDays:   document.getElementById("fm_total_days") ? document.getElementById("fm_total_days").value.trim() : "",
+    link:        document.getElementById("fm_link") ? document.getElementById("fm_link").value.trim() : "",
     annualLeave: document.querySelector('input[name="fm_annual"]:checked')?.value || "",
-    link:        existing?.link || "",
     memo:        document.getElementById("fm_memo").value.trim(),
-    selected: existing?.selected || false
+    selected:    existing?.selected || false
   };
 
   const idx = planData.flights.findIndex(x => x.id === entry.id);
@@ -319,8 +373,8 @@ function filterFlights(type, btn) { renderFlights(); } // 호환성 유지
 function filterByAnnual(days, btn) {
   // 토글: 다시 누르면 전체보기
   flightAnnualFilter = (flightAnnualFilter === days) ? "all" : days;
-  document.querySelectorAll("#annualBtn_5, #annualBtn_6").forEach(b => b.classList.remove("active"));
-  if (flightAnnualFilter !== "all") btn.classList.add("active");
+  document.querySelectorAll("#annualBtn_5, #annualBtn_6, #annualBtn_7").forEach(b => b.classList.remove("active"));
+  if (flightAnnualFilter !== "all" && btn) btn.classList.add("active");
   renderFlights();
 }
 function sortFlights(by, btn) {
@@ -357,37 +411,62 @@ function renderFlights() {
   }
 
   emptyEl.style.display        = "none";
-  gridEl.style.display         = "block";
-  gridEl.style.flexDirection   = "";
-  gridEl.style.gap             = "";
+  gridEl.style.display         = "grid";
+  gridEl.style.gridTemplateColumns = "1fr 1fr";
+  gridEl.style.gap             = "16px";
   if (bannerEl) bannerEl.style.display = "none"; // 배너 숨김
 
   gridEl.innerHTML = list.map(f => {
-    const isCheapest = list[0]?.id === f.id && list.length > 1;
     const isSelected = f.selected || false;
-    const nightsLabel = calcNightsLabel(f);
+    
+    // 사진 캡쳐 이미지 (리스트에 표시)
+    const imageHtml = f.imageUrl ? `
+      <div style="margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); width:100%; background:rgba(0,0,0,0.15);">
+        <img src="${f.imageUrl}" style="width:100%; height:auto; max-height:350px; object-fit:contain; display:block; margin: 0 auto;" alt="항공 일정 캡쳐">
+      </div>
+    ` : "";
+
+    const linkHtml = f.link ? `
+      <div style="margin-top:12px;">
+        <a href="${f.link}" target="_blank" style="color:#38bdf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+          🔗 항공권 예약 링크 이동
+        </a>
+      </div>
+    ` : "";
 
     const badges = [];
-    if (isCheapest) badges.push(`<span class="badge-pill badge-cheapest">🏷️ 최저가</span>`);
-    badges.push(`<span class="badge-pill badge-direct">✈ 직항</span>`);
-    if (f.cls) badges.push(`<span class="badge-pill" style="background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.25);color:var(--text-sub);">${f.cls}</span>`);
-    if (nightsLabel) badges.push(`<span class="badge-pill" style="background:rgba(14,165,233,0.15);border:1px solid rgba(14,165,233,0.35);color:#38bdf8;">🌙 ${nightsLabel}</span>`);
     if (f.annualLeave) badges.push(`<span class="badge-pill" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;">🏖️ 연차 ${f.annualLeave}일</span>`);
 
-
-    const hasReturn = f.rdep || f.rarr;
+    function formatDateForFlight(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const wk = ["일","월","화","수","목","금","토"][d.getDay()];
+      return `${m}.${day} (${wk})`;
+    }
+    
+    let dateRangeHtml = "";
+    if (f.depdate || f.rdate) {
+      const depStr = formatDateForFlight(f.depdate) || "?";
+      const retStr = formatDateForFlight(f.rdate) || "?";
+      dateRangeHtml = `<div style="font-size:13px; font-weight:600; color:#34d399; margin-bottom:4px;">🗓️ ${depStr} ~ ${retStr}</div>`;
+    }
 
     return `
     <div class="glass-card fc-row ${isSelected ? 'selected' : ''}" id="fc-${f.id}">
-
-      <div class="fc-header">
-        <div class="fc-header-left">
-          <div class="fc-airline-name">${f.airline}</div>
-          <div class="fc-airline-meta">${badges.join("")}</div>
+      <div class="fc-header" style="border-bottom:none; margin-bottom:0; padding-bottom:0; align-items:flex-start;">
+        <div class="fc-header-left" style="flex:1;">
+          ${dateRangeHtml}
+          <div class="fc-airline-name" style="font-size:15px; font-weight:700; color:var(--text-main); white-space:normal; line-height:1.4;">
+            총 일정 ${f.totalNights||0}박 ${f.totalDays||0}일 (시드니 ${f.sydneyDays||0}일 / 퍼스 ${f.perthDays||0}일)
+          </div>
+          <div class="fc-airline-meta" style="margin-top:6px;">${badges.join("")}</div>
         </div>
-        <div class="fc-header-right">
+        <div class="fc-header-right" style="align-items:flex-end;">
           <div class="fc-price">${f.price ? fmtPrice(f.price) : "-"}<span>원</span></div>
-          <div class="fc-actions">
+          <div class="fc-actions" style="margin-top:8px;">
             <button class="btn-select ${isSelected ? 'selected-active' : ''}" onclick="selectFlight('${f.id}')">
               ${isSelected ? '✅ 선택됨' : '☐ 선택'}
             </button>
@@ -397,46 +476,11 @@ function renderFlights() {
         </div>
       </div>
 
-      <div class="fc-legs">
-        <div class="fc-leg">
-          <div class="fc-leg-label out">🛫 가는 편 <span class="fc-leg-route">${f.depCode||"ICN"} → ${f.arrCode||"SYD"}${f.depdate ? ` · ${f.depdate.slice(5).replace("-","/")}` : ""}</span></div>
-          <div class="fc-route">
-            <div class="fc-point">
-              <div class="fc-time">${f.dep || "--:--"}</div>
-              <div class="fc-code">${f.depCode || "ICN"}</div>
-            </div>
-            <div class="fc-mid">
-              <div class="fc-dur">${f.dur || "-"}</div>
-              <div class="fc-line"></div>
-            </div>
-            <div class="fc-point">
-              <div class="fc-time">${f.arr || "--:--"}</div>
-              <div class="fc-code">${f.arrCode || "SYD"}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fc-leg ${hasReturn ? '' : 'fc-leg-empty'}">
-          <div class="fc-leg-label ret">🛬 오는 편 <span class="fc-leg-route">SYD → ICN${f.rdate ? ` · ${new Date(f.rdate+"T00:00").toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})}` : ""}</span></div>
-          ${hasReturn ? `
-          <div class="fc-route">
-            <div class="fc-point">
-              <div class="fc-time">${f.rdep || "--:--"}</div>
-              <div class="fc-code">SYD</div>
-            </div>
-            <div class="fc-mid">
-              <div class="fc-dur">${f.rdur || "-"}</div>
-              <div class="fc-line"></div>
-            </div>
-            <div class="fc-point">
-              <div class="fc-time">${f.rarr || "--:--"}</div>
-              <div class="fc-code">ICN</div>
-            </div>
-          </div>` : `<div class="fc-empty-hint">오는 편 미입력 — ✏️ 수정으로 추가</div>`}
-        </div>
+      <div style="padding: 0 16px 16px 16px;">
+        ${imageHtml}
+        ${linkHtml}
+        ${f.memo ? `<div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05); font-size:13px; color:var(--text-sub);">💬 ${f.memo}</div>` : ""}
       </div>
-
-      ${f.memo ? `<div class="fc-footer"><span class="fc-memo-text">💬 ${f.memo}</span></div>` : ""}
     </div>`;
   }).join("");
 }
