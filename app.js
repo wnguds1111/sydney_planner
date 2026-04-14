@@ -76,7 +76,7 @@ const defaultChecklistGroups = [
 ];
 
 const defaultSydneyData = {
-  departDate: "2026-09-01T09:00:00",
+  departDate: "2026-10-21T00:00:00",
   flights: [],
   hotels:  [],
   memos:   [],
@@ -207,7 +207,8 @@ function toggleQuokkas() {
 // ─── Countdown ───
 function startCountdown() {
   const update = () => {
-    const target = new Date(planData?.departDate || defaultSydneyData.departDate).getTime();
+    // 출발일 고정: 2026년 10월 21일 00:00 (KST)
+    const target = new Date("2026-10-21T00:00:00+09:00").getTime();
     const diff = target - Date.now();
     if (diff <= 0) { ["cdDays","cdHours","cdMins","cdSecs"].forEach(id => document.getElementById(id).textContent = "00"); return; }
     const d = Math.floor(diff/86400000);
