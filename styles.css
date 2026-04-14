@@ -2225,7 +2225,7 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   .countdown-num { font-size: 20px; }
   .countdown-lbl { font-size: 9px; }
   .countdown-sep { font-size: 18px; }
-  .btn-quokka-toggle { right: 10px; top: 10px; font-size: 11px; padding: 5px 10px; }
+
 
   /* ── Tabs ── */
   .tabs-bar {
@@ -2342,9 +2342,9 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   /* ── Footer ── */
   footer { font-size: 11px; padding: 16px 12px; }
 
-  /* ── Floating animals (hide on mobile for perf) ── */
-  .floating-animals-wrap { display: none !important; }
-  .btn-quokka-toggle { display: none !important; }
+  /* ── Floating animals: 모바일은 JS로 ON/OFF 관리 (CSS hide 제거) ── */
+  .floating-animals-wrap { display: block; }
+  .btn-quokka-toggle { display: block; right: 10px; top: 10px; font-size: 11px; padding: 5px 10px; }
 }
 
 /* ── 아주 작은 화면 (360px 이하) ── */
@@ -2352,4 +2352,67 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   .hero-title { font-size: 20px; }
   .tab-btn { padding: 6px 10px; font-size: 10px; }
   .hc-card-actions { gap: 4px; }
+}
+
+/* ================================================================
+   FLIGHT GRID & CARD (responsive)
+   ================================================================ */
+.flight-grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.fc-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.fc-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 0 16px;
+}
+.fc-top-left { flex: 1; min-width: 0; }
+.fc-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.fc-summary-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-sub);
+  white-space: normal;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+.fc-badges { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.fc-body { padding: 0 16px 16px 16px; }
+.fc-memo {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+@media (max-width: 768px) {
+  .flight-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+  .fc-top-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fc-top-right {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .fc-actions { margin-top: 0; }
+  .fc-summary-text { font-size: 13px; }
 }

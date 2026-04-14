@@ -159,12 +159,21 @@ function generateFloatingAnimals() {
   container.innerHTML = html;
   document.body.appendChild(container);
 
-  // Initialize toggle state
+  const isMobile = window.innerWidth <= 768;
+  const savedMode = localStorage.getItem("quokkaMode");
+  const btn = document.getElementById("btnQuokkaToggle");
+
+  // 모바일: 저장값 없으면 기본 OFF
+  if (isMobile && savedMode === null) {
+    localStorage.setItem("quokkaMode", "off");
+  }
+
   const isOff = localStorage.getItem("quokkaMode") === "off";
   if (isOff) {
     container.classList.add("hidden");
-    const btn = document.getElementById("btnQuokkaToggle");
     if (btn) btn.innerHTML = "쿼둥이 OFF 💤";
+  } else {
+    if (btn) btn.innerHTML = "쿼둥이 ON 🐻";
   }
 }
 
@@ -172,13 +181,24 @@ function toggleQuokkas() {
   const container = document.querySelector(".floating-animals-wrap");
   const btn = document.getElementById("btnQuokkaToggle");
   if (!container || !btn) return;
-  
+
+  const isMobile = window.innerWidth <= 768;
+
   if (container.classList.contains("hidden")) {
+    // ON으로 전환
     container.classList.remove("hidden");
+    if (isMobile) {
+      // 모바일에서는 CSS display:none을 override
+      container.style.display = "block";
+    }
     btn.innerHTML = "쿼둥이 ON 🐻";
     localStorage.setItem("quokkaMode", "on");
   } else {
+    // OFF로 전환
     container.classList.add("hidden");
+    if (isMobile) {
+      container.style.display = "";
+    }
     btn.innerHTML = "쿼둥이 OFF 💤";
     localStorage.setItem("quokkaMode", "off");
   }
@@ -433,10 +453,11 @@ function renderFlights() {
     return;
   }
 
-  emptyEl.style.display        = "none";
-  gridEl.style.display         = "grid";
-  gridEl.style.gridTemplateColumns = "1fr 1fr";
-  gridEl.style.gap             = "16px";
+  emptyEl.style.display  = "none";
+  gridEl.style.display   = "";
+  gridEl.className       = "flight-grid-responsive";
+  gridEl.style.gap       = "";
+  gridEl.style.gridTemplateColumns = "";
   if (bannerEl) bannerEl.style.display = "none"; // 배너 숨김
 
   gridEl.innerHTML = list.map(f => {
@@ -478,18 +499,18 @@ function renderFlights() {
     }
 
     return `
-    <div class="glass-card fc-row ${isSelected ? 'selected' : ''}" id="fc-${f.id}">
-      <div class="fc-header" style="border-bottom:none; margin-bottom:0; padding-bottom:0; align-items:flex-start;">
-        <div class="fc-header-left" style="flex:1;">
+    <div class="glass-card fc-card-wrap ${isSelected ? 'selected' : ''}" id="fc-${f.id}">
+      <div class="fc-top-row">
+        <div class="fc-top-left">
           ${dateRangeHtml}
-          <div class="fc-airline-name" style="font-size:15px; font-weight:700; color:var(--text-main); white-space:normal; line-height:1.4;">
+          <div class="fc-summary-text">
             총 일정 ${f.totalNights||0}박 ${f.totalDays||0}일 (시드니 ${f.sydneyDays||0}일 / 퍼스 ${f.perthDays||0}일)
           </div>
-          <div class="fc-airline-meta" style="margin-top:6px;">${badges.join("")}</div>
+          <div class="fc-badges">${badges.join("")}</div>
         </div>
-        <div class="fc-header-right" style="align-items:flex-end;">
+        <div class="fc-top-right">
           <div class="fc-price">${f.price ? fmtPrice(f.price) : "-"}<span>원</span></div>
-          <div class="fc-actions" style="margin-top:8px;">
+          <div class="fc-actions">
             <button class="btn-select ${isSelected ? 'selected-active' : ''}" onclick="selectFlight('${f.id}')">
               ${isSelected ? '✅ 선택됨' : '☐ 선택'}
             </button>
@@ -498,11 +519,10 @@ function renderFlights() {
           </div>
         </div>
       </div>
-
-      <div style="padding: 0 16px 16px 16px;">
+      <div class="fc-body">
         ${imageHtml}
         ${linkHtml}
-        ${f.memo ? `<div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05); font-size:13px; color:var(--text-sub);">💬 ${f.memo}</div>` : ""}
+        ${f.memo ? `<div class="fc-memo">💬 ${f.memo}</div>` : ""}
       </div>
     </div>`;
   }).join("");
