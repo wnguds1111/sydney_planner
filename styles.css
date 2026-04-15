@@ -2190,10 +2190,7 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
   100% { transform: translateY(-120vh) rotate(-25deg); opacity: 0; }
 }
 
-.btn-select { padding: 9px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); color: var(--text-sub); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-.btn-select:hover { background: rgba(255,255,255,0.1); color: var(--white); }
-.btn-select.selected-active { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--green); }
-.glass-card.selected { border-color: rgba(16,185,129,0.4); box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+/* Duplicate rule removed — see SELECTED STATE block above */
 
 .floating-animals-wrap { transition: opacity 0.5s; }
 .floating-animals-wrap.hidden { opacity: 0; }
@@ -2515,4 +2512,31 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
     text-overflow: ellipsis;
     max-width: 90vw;
   }
+}
+
+/* ================================================================
+   ENHANCED SELECTED STATE OVERRIDE
+   ================================================================ */
+@keyframes selectedPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(251,191,36,0.5), 0 0 24px rgba(251,191,36,0.25), 0 12px 40px rgba(251,191,36,0.2); }
+  50%       { box-shadow: 0 0 0 3px rgba(251,191,36,0.85), 0 0 42px rgba(251,191,36,0.45), 0 16px 50px rgba(251,191,36,0.3); }
+}
+
+.fc-card-wrap.selected,
+.fc-row.selected,
+.hc-card.selected,
+.glass-card.selected {
+  border-color: var(--gold) !important;
+  background: linear-gradient(135deg, rgba(251,191,36,0.09) 0%, rgba(15,23,42,0.95) 60%) !important;
+  animation: selectedPulse 2.4s ease-in-out infinite !important;
+}
+
+.btn-select.selected-active {
+  background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(251,191,36,0.15)) !important;
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+  box-shadow: 0 0 18px rgba(251,191,36,0.45) !important;
+  font-size: 13px !important;
+  padding: 8px 18px !important;
+  font-weight: 900 !important;
 }
