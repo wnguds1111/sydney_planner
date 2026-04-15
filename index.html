@@ -315,8 +315,8 @@
       <div class="form-group" style="margin-bottom: 20px;">
         <label class="form-label">지출 시기</label>
         <div style="display:flex; gap:16px;">
-          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="pre" checked> 🛫 사전 지출</label>
-          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="trip"> 🐨 여행 중 지출</label>
+          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="pre" checked onchange="updateExpenseTimingUI()"> 🛫 사전 지출</label>
+          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="trip" onchange="updateExpenseTimingUI()"> 🐨 여행 중 지출</label>
         </div>
       </div>
       <div class="form-group">
@@ -335,8 +335,9 @@
         <input class="form-input" type="text" id="expenseTitle" placeholder="예: 오페라 하우스 투어, 햄버거 세트...">
       </div>
       <div class="form-group">
-        <label class="form-label">결제 금액 (AUD)</label>
-        <input class="form-input" type="number" id="expenseAmount" placeholder="호주 달러 기준 입력 (숫자만)" step="0.01">
+        <label class="form-label" id="expenseAmountLabel">결제 금액 (AUD)</label>
+        <input class="form-input" type="number" id="expenseAmount" placeholder="숫자만 입력" step="1" oninput="updateExpensePreview()">
+        <div id="expenseConvertPreview" style="margin-top:8px; font-size:13px; font-weight:700; color:var(--text-muted); min-height:18px;"></div>
       </div>
       <div class="form-group">
         <label class="form-label">메모 (선택)</label>

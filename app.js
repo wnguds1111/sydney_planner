@@ -1385,20 +1385,59 @@ async function fetchExchangeRate() {
 // ================================================================
 //  EXPENSE — CRUD + Render
 // ================================================================
+// ── UI helpers for expense modal ──
+function updateExpenseTimingUI() {
+  const timing = document.querySelector('input[name="expenseTiming"]:checked')?.value;
+  const label = document.getElementById("expenseAmountLabel");
+  const input = document.getElementById("expenseAmount");
+  if (timing === "pre") {
+    label.textContent = "결제 금액 (원화 ₩)";
+    input.placeholder  = "한국 원화 금액 입력 (예: 150000)";
+    input.step = "1";
+  } else {
+    label.textContent = "결제 금액 (AUD A$)";
+    input.placeholder  = "호주 달러 입력 (예: 120.50)";
+    input.step = "0.01";
+  }
+  input.value = "";
+  document.getElementById("expenseConvertPreview").innerHTML = "";
+}
+
+function updateExpensePreview() {
+  const timing = document.querySelector('input[name="expenseTiming"]:checked')?.value;
+  const val = parseFloat(document.getElementById("expenseAmount").value);
+  const preview = document.getElementById("expenseConvertPreview");
+  if (isNaN(val) || val <= 0) { preview.innerHTML = ""; return; }
+
+  if (timing === "pre") {
+    // KRW 입력 → AUD 환산 미리보기
+    const aud = val / exchangeRateAudToKrw;
+    preview.innerHTML = `<span style="color:#38bdf8;">≈ A$ ${aud.toFixed(2)}</span> <span style="color:var(--text-muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
+  } else {
+    // AUD 입력 → KRW 환산 미리보기
+    const krw = val * exchangeRateAudToKrw;
+    preview.innerHTML = `<span style="color:#fbbf24;">≈ ₩ ${fmtPrice(Math.round(krw))}</span> <span style="color:var(--text-muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
+  }
+}
+
 function openExpenseModal(id = null) {
   const m = document.getElementById("expenseModal");
   if (!m) return;
   m.classList.add("active");
-  
+
   if (id) {
     const ex = planData.expenses.find(e => e.id === id);
     if (!ex) return;
     document.getElementById("expenseModalTitle").textContent = "💸 지출 수정";
     document.getElementById("editExpenseId").value = ex.id;
-    document.querySelector(`input[name="expenseTiming"][value="${ex.timing || 'pre'}"]`).checked = true;
+    const timingRadio = document.querySelector(`input[name="expenseTiming"][value="${ex.timing || 'pre'}"]`);
+    if (timingRadio) timingRadio.checked = true;
     document.getElementById("expenseCategory").value = ex.category || "기타";
     document.getElementById("expenseTitle").value  = ex.title || "";
-    document.getElementById("expenseAmount").value = ex.amount || "";
+    // 사전지출이면 amountKrw, 여행중이면 amount(AUD)
+    document.getElementById("expenseAmount").value = (ex.timing === "pre")
+      ? (ex.amountKrw || Math.round((ex.amount || 0) * exchangeRateAudToKrw))
+      : (ex.amount || "");
     document.getElementById("expenseMemo").value   = ex.memo || "";
   } else {
     document.getElementById("expenseModalTitle").textContent = "💸 지출 등록";
@@ -1409,6 +1448,17 @@ function openExpenseModal(id = null) {
     document.getElementById("expenseAmount").value = "";
     document.getElementById("expenseMemo").value   = "";
   }
+  updateExpenseTimingUI();
+  // 수정 시 기존 값 되살리기
+  if (id) {
+    const ex = planData.expenses.find(e => e.id === id);
+    if (ex) {
+      document.getElementById("expenseAmount").value = (ex.timing === "pre")
+        ? (ex.amountKrw || Math.round((ex.amount || 0) * exchangeRateAudToKrw))
+        : (ex.amount || "");
+      updateExpensePreview();
+    }
+  }
 }
 
 function closeExpenseModal() {
@@ -1416,23 +1466,32 @@ function closeExpenseModal() {
 }
 
 function saveExpense() {
-  const id    = document.getElementById("editExpenseId").value;
+  const id     = document.getElementById("editExpenseId").value;
   const timing = document.querySelector('input[name="expenseTiming"]:checked').value;
-  const cat   = document.getElementById("expenseCategory").value;
-  const title = document.getElementById("expenseTitle").value.trim();
-  const amt   = parseFloat(document.getElementById("expenseAmount").value);
-  const memo  = document.getElementById("expenseMemo").value.trim();
-  
+  const cat    = document.getElementById("expenseCategory").value;
+  const title  = document.getElementById("expenseTitle").value.trim();
+  const rawAmt = parseFloat(document.getElementById("expenseAmount").value);
+  const memo   = document.getElementById("expenseMemo").value.trim();
+
   if (!title) return alert("지출 내역/품목을 입력하세요.");
-  if (isNaN(amt) || amt <= 0) return alert("올바른 결제 금액을 입력하세요.");
+  if (isNaN(rawAmt) || rawAmt <= 0) return alert("올바른 금액을 입력하세요.");
+
+  let amountKrw, amount; // amount = AUD 기준
+  if (timing === "pre") {
+    amountKrw = Math.round(rawAmt);      // 입력값 = 원화
+    amount    = rawAmt / exchangeRateAudToKrw; // AUD 환산 (합계용)
+  } else {
+    amount    = rawAmt;               // 입력값 = AUD
+    amountKrw = Math.round(rawAmt * exchangeRateAudToKrw);
+  }
+
+  const entry = { timing, category: cat, title, amount, amountKrw, memo };
 
   if (id) {
     const idx = planData.expenses.findIndex(e => e.id === id);
-    if (idx !== -1) {
-      planData.expenses[idx] = { ...planData.expenses[idx], timing: timing, category: cat, title: title, amount: amt, memo: memo };
-    }
+    if (idx !== -1) planData.expenses[idx] = { ...planData.expenses[idx], ...entry };
   } else {
-    planData.expenses.push({ id: "ex_" + Date.now(), timing: timing, category: cat, title: title, amount: amt, memo: memo });
+    planData.expenses.push({ id: "ex_" + Date.now(), ...entry });
   }
   scheduleSave();
   closeExpenseModal();
@@ -1453,33 +1512,41 @@ function renderExpenses() {
   const preGrid  = document.getElementById("expensePreGrid");
   const tripGrid = document.getElementById("expenseTripGrid");
   const list = planData.expenses;
-  
-  // Update Summary
-  let totalAud = list.reduce((acc, curr) => acc + curr.amount, 0);
-  let totalPreKrw = list.filter(e => e.timing === "pre").reduce((acc, curr) => acc + curr.amount, 0) * exchangeRateAudToKrw;
-  let totalTripKrw = list.filter(e => e.timing !== "pre").reduce((acc, curr) => acc + curr.amount, 0) * exchangeRateAudToKrw;
-  
-  document.getElementById("summaryTotalAud").textContent = `A$ ${fmtPrice(totalAud)}`;
-  document.getElementById("summaryPreKrw").textContent = `₩ ${fmtPrice(totalPreKrw)}`;
-  document.getElementById("summaryTripKrw").textContent = `₩ ${fmtPrice(totalTripKrw)}`;
-  
+
+  // Summary
+  const preList  = list.filter(e => e.timing === "pre");
+  const tripList = list.filter(e => e.timing !== "pre");
+  const totalAud    = list.reduce((acc, e) => acc + (e.amount || 0), 0);
+  const totalPreKrw = preList.reduce((acc, e) => acc + (e.amountKrw || Math.round((e.amount||0) * exchangeRateAudToKrw)), 0);
+  const totalTripKrw= tripList.reduce((acc, e) => acc + Math.round((e.amount||0) * exchangeRateAudToKrw), 0);
+
+  document.getElementById("summaryTotalAud").textContent  = `A$ ${fmtPrice(totalAud.toFixed(2))}`;
+  document.getElementById("summaryPreKrw").textContent    = `₩ ${fmtPrice(totalPreKrw)}`;
+  document.getElementById("summaryTripKrw").textContent   = `₩ ${fmtPrice(totalTripKrw)}`;
+
   if (list.length === 0) {
     emptyEl.style.display = "flex";
     wrapEl.style.display  = "none";
     return;
   }
-  
+
   emptyEl.style.display = "none";
   wrapEl.style.display  = "grid";
   wrapEl.style.gridTemplateColumns = "repeat(auto-fit, minmax(300px, 1fr))";
   wrapEl.style.gap = "24px";
-  
+
   const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
-  
-  function makeHtml(arr, priceColor) {
+
+  function makeHtml(arr, isPre) {
     if (arr.length === 0) return `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed rgba(255,255,255,0.1);">내역이 없습니다.</div>`;
     return arr.map(e => {
-      const krwEst = e.amount * exchangeRateAudToKrw;
+      const krw = e.amountKrw || Math.round((e.amount||0) * exchangeRateAudToKrw);
+      const aud = e.amount || (krw / exchangeRateAudToKrw);
+      // Pre: 원화 크게, AUD 작게 / Trip: AUD 크게, 원화 작게
+      const mainAmt  = isPre ? `₩ ${fmtPrice(krw)}` : `A$ ${fmtPrice(aud.toFixed(2))}`;
+      const mainColor= isPre ? "#fbbf24" : "#a78bfa";
+      const subAmt   = isPre ? `≈ A$ ${aud.toFixed(2)}` : `≈ ₩ ${fmtPrice(krw)}`;
+
       return `
       <div class="glass-card fc-row" id="ex-${e.id}">
         <div class="fc-header" style="align-items:center;">
@@ -1488,8 +1555,8 @@ function renderExpenses() {
             ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
           </div>
           <div class="fc-header-right" style="text-align:right;">
-            <div class="fc-price" style="color:${priceColor};">A$ ${fmtPrice(e.amount)}</div>
-            <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">약 ₩ ${fmtPrice(krwEst)}</div>
+            <div class="fc-price" style="color:${mainColor}; font-size:20px;">${mainAmt}</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${subAmt}</div>
             <div class="fc-actions" style="justify-content:flex-end;">
               <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
               <button class="btn-action del" onclick="deleteExpense('${e.id}')" title="삭제">🗑</button>
@@ -1500,7 +1567,7 @@ function renderExpenses() {
     }).join("");
   }
 
-  preGrid.innerHTML = makeHtml(list.filter(e => e.timing === "pre"), "#fbbf24");
-  tripGrid.innerHTML = makeHtml(list.filter(e => e.timing !== "pre"), "#a78bfa");
+  preGrid.innerHTML  = makeHtml(preList,  true);
+  tripGrid.innerHTML = makeHtml(tripList, false);
 }
 
