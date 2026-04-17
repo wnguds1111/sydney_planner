@@ -2479,8 +2479,8 @@ footer { font-size: 13px; letter-spacing: 0.3px; }
 
   /* ── itinerary sidebar timeline ── */
   #timelineList {
-    max-height: 300px;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 
   /* ── day tabs mini: no horizontal scroll ── */
