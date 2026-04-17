@@ -686,14 +686,27 @@ function renderHotels() {
     const memoHtml  = h.memo ? `<div class="hc-card-memo">💬 ${h.memo}</div>` : "";
     const descHtml  = h.desc ? `<div class="hc-card-desc">${h.desc}</div>` : "";
     const isSelected = h.selected || false;
-    
-    // Calculate dates
+
+    // Calculate dates display
     let datesHtml = "";
     if (h.checkin || h.checkout) {
       const ci = h.checkin ? h.checkin.substring(5).replace("-", "/") : "?";
       const co = h.checkout ? h.checkout.substring(5).replace("-", "/") : "?";
       datesHtml = `<div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">🗓️ ${ci} ~ ${co}</div>`;
     }
+
+    // Calculate total price
+    let nights = 0;
+    if (h.checkin && h.checkout) {
+      const d1 = new Date(h.checkin);
+      const d2 = new Date(h.checkout);
+      if (!isNaN(d1) && !isNaN(d2)) nights = Math.round((d2 - d1) / 86400000);
+    }
+    const totalPrice = h.price && nights > 0 ? h.price * nights : null;
+    const priceDisplay = totalPrice ? fmtPrice(totalPrice) : (h.price ? fmtPrice(h.price) : "-");
+    const priceUnit = totalPrice
+      ? `원 <span style="font-size:11px; opacity:0.6; font-weight:600;">(${nights}박 총액)</span>`
+      : `원 / 박`;
 
     const mkLink = (url, cls, label) => url
       ? `<a class="btn-link-sm ${cls}" href="${url}" target="_blank" style="padding: 8px 16px; border-radius: 8px; font-size: 13px; text-align: center; width: 100%; display:block; box-sizing:border-box;">${label}</a>`
@@ -717,8 +730,8 @@ function renderHotels() {
           </div>
         </div>
         <div class="hc-card-price" style="margin-top:12px;">
-          <div class="hc-price-num">${h.price ? fmtPrice(h.price) : "-"}</div>
-          <div class="hc-price-unit">원 / 박</div>
+          <div class="hc-price-num">${priceDisplay}</div>
+          <div class="hc-price-unit">${priceUnit}</div>
         </div>
         ${descHtml}
         ${memoHtml}
@@ -728,6 +741,7 @@ function renderHotels() {
       </div>` : ""}
     </div>`;
   };
+
 
   const sydList = list.filter(h => !h.city || h.city === 'sydney');
   const perthList = list.filter(h => h.city === 'perth');
