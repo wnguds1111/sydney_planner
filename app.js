@@ -390,7 +390,67 @@ function saveFlight() {
 
   closeFlightModal();
   renderFlights();
+  syncExpensesFromSelections();
   scheduleSave();
+}
+
+function syncExpensesFromSelections() {
+  if (!planData.expenses) planData.expenses = [];
+  planData.expenses = planData.expenses.filter(e => !e.isAuto);
+
+  // 1. 비행기
+  const selFlight = planData.flights.find(f => f.selected);
+  if (selFlight && selFlight.price) {
+    planData.expenses.push({
+      id: "auto_flight", timing: "pre", category: "항공/숙박",
+      title: "비행기", amountKrw: selFlight.price, amount: selFlight.price / exchangeRateAudToKrw,
+      memo: selFlight.airline || "", isAuto: true
+    });
+  }
+
+  // 2. 시드니 숙박
+  const sydHotels = planData.hotels.filter(h => h.selected && (!h.city || h.city === 'sydney'));
+  let sydTotal = 0; let sydNames = [];
+  sydHotels.forEach(h => {
+    let nights = 0;
+    if (h.checkin && h.checkout) {
+      const ci = new Date(h.checkin); const co = new Date(h.checkout);
+      if (!isNaN(ci) && !isNaN(co)) nights = Math.round((co - ci) / 86400000);
+    }
+    if (h.price && nights > 0) sydTotal += h.price * nights;
+    else if (h.price) sydTotal += h.price;
+    sydNames.push(h.name);
+  });
+  if (sydTotal > 0) {
+    planData.expenses.push({
+      id: "auto_syd_hotel", timing: "pre", category: "항공/숙박",
+      title: "시드니 숙박", amountKrw: sydTotal, amount: sydTotal / exchangeRateAudToKrw,
+      memo: sydNames.join(", "), isAuto: true
+    });
+  }
+
+  // 3. 퍼스 숙박
+  const perthHotels = planData.hotels.filter(h => h.selected && h.city === 'perth');
+  let perthTotal = 0; let perthNames = [];
+  perthHotels.forEach(h => {
+    let nights = 0;
+    if (h.checkin && h.checkout) {
+      const ci = new Date(h.checkin); const co = new Date(h.checkout);
+      if (!isNaN(ci) && !isNaN(co)) nights = Math.round((co - ci) / 86400000);
+    }
+    if (h.price && nights > 0) perthTotal += h.price * nights;
+    else if (h.price) perthTotal += h.price;
+    perthNames.push(h.name);
+  });
+  if (perthTotal > 0) {
+    planData.expenses.push({
+      id: "auto_perth_hotel", timing: "pre", category: "항공/숙박",
+      title: "퍼스 숙박", amountKrw: perthTotal, amount: perthTotal / exchangeRateAudToKrw,
+      memo: perthNames.join(", "), isAuto: true
+    });
+  }
+
+  if (typeof renderExpenses === 'function') renderExpenses();
 }
 
 // ── Select Flight ──
@@ -399,6 +459,7 @@ function selectFlight(id) {
     f.selected = (f.id === id) ? !f.selected : false;
   });
   renderFlights();
+  syncExpensesFromSelections();
   scheduleSave();
 }
 
@@ -407,6 +468,7 @@ function deleteFlight(id) {
   if (!confirm("이 항공권을 삭제할까요?")) return;
   planData.flights = planData.flights.filter(x => x.id !== id);
   renderFlights();
+  syncExpensesFromSelections();
   scheduleSave();
 }
 
@@ -619,14 +681,15 @@ function saveHotel() {
 
   closeHotelModal();
   renderHotels();
+  syncExpensesFromSelections();
   scheduleSave();
 }
 
 function selectHotel(id) {
-  planData.hotels.forEach(h => {
-    h.selected = (h.id === id) ? !h.selected : false;
-  });
+  const h = planData.hotels.find(x => x.id === id);
+  if (h) h.selected = !h.selected;
   renderHotels();
+  syncExpensesFromSelections();
   scheduleSave();
 }
 
@@ -634,6 +697,7 @@ function deleteHotel(id) {
   if (!confirm("이 호텔을 삭제할까요?")) return;
   planData.hotels = planData.hotels.filter(x => x.id !== id);
   renderHotels();
+  syncExpensesFromSelections();
   scheduleSave();
 }
 
