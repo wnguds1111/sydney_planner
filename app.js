@@ -25,6 +25,7 @@ let flightSort   = "depdate_asc";
 let hotelSort    = "price";
 let flightAnnualFilter = "all"; // 연차 필터: "all" | "5" | "6"
 let exchangeRateAudToKrw = 900; // 기본 환율
+let isDataLoaded = false; // 데이터 로드 여부 플래그
 
 // ─── Area Label Map ───
 const AREA_LABELS = {
@@ -228,6 +229,10 @@ function startCountdown() {
 // ─── Firebase: Load / Save ───
 let saveTimer = null;
 function scheduleSave() {
+  if (!isDataLoaded) {
+    console.warn("⚠️ 데이터가 정상적으로 로드되지 않았거나 로드 중이므로 저장을 차단합니다. 새로고침을 해주세요.");
+    return;
+  }
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     db.collection("planData").doc(SYDNEY_DOC).set({
@@ -247,18 +252,83 @@ async function loadData() {
       if (!planData.hotels)  planData.hotels  = [];
       if (!planData.memos)   planData.memos   = [];
       if (!planData.expenses) planData.expenses = [];
-      // 투어 기본값 강제 갱신 (링크 등 업데이트 반영)
-      if (!planData.tours) planData.tours = JSON.parse(JSON.stringify(defaultSydneyData.tours));
+      
+      // 투어 기본값 스마트 병합 (코드의 최신 수정사항 반영 + Firestore의 선택/메모/사용자 정의 투어 유지)
+      if (!planData.tours) {
+        planData.tours = JSON.parse(JSON.stringify(defaultSydneyData.tours));
+      } else {
+        const existingMap = new Map();
+        planData.tours.forEach(t => existingMap.set(t.id, t));
+
+        const mergedTours = [];
+        defaultSydneyData.tours.forEach(defTour => {
+          if (existingMap.has(defTour.id)) {
+            const dbTour = existingMap.get(defTour.id);
+            mergedTours.push({
+              ...defTour,
+              ...dbTour
+            });
+            existingMap.delete(defTour.id);
+          } else {
+            // 코드에 새로 추가된 기본 투어
+            mergedTours.push(JSON.parse(JSON.stringify(defTour)));
+          }
+        });
+
+        // 사용자가 UI에서 직접 추가한 커스텀 투어들 유지
+        existingMap.forEach(customTour => {
+          mergedTours.push(customTour);
+        });
+
+        planData.tours = mergedTours;
+      }
+      
       console.log("✅ 시드니 플래너 로드 완료");
+      isDataLoaded = true;
     } else {
       planData = { ...JSON.parse(JSON.stringify(defaultSydneyData)), checklistGroups: JSON.parse(JSON.stringify(defaultChecklistGroups)) };
+      isDataLoaded = true;
       scheduleSave();
       console.log("📝 기본 데이터 최초 저장");
     }
   } catch (e) {
     console.error("Load error:", e);
+    isDataLoaded = false;
+    showLoadErrorAlert();
     planData = { ...JSON.parse(JSON.stringify(defaultSydneyData)), checklistGroups: JSON.parse(JSON.stringify(defaultChecklistGroups)) };
   }
+}
+
+function showLoadErrorAlert() {
+  if (document.getElementById("dbLoadErrorBanner")) return;
+  const banner = document.createElement("div");
+  banner.id = "dbLoadErrorBanner";
+  banner.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(239, 68, 68, 0.95);
+    color: white;
+    text-align: center;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 10000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  `;
+  banner.innerHTML = `
+    <span>⚠️ 실시간 데이터베이스 로드에 실패했습니다. 변경 사항이 유실될 수 있으니 페이지를 새로고침 해주세요.</span>
+    <button onclick="location.reload()" style="background: white; color: #ef4444; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 12px; transition: opacity 0.2s;">새로고침</button>
+  `;
+  document.body.appendChild(banner);
+  document.body.style.paddingTop = "45px";
 }
 
 // ─── Tab ───
