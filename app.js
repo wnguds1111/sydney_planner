@@ -259,7 +259,16 @@ async function loadData() {
       } else {
         const existingMap = new Map();
         planData.tours.forEach(t => existingMap.set(t.id, t));
-        const deletedIds = planData.deletedDefaultTourIds || [];
+        
+        // 데이터 정합성 보완 (이전 캐시 브라우저에서 deletedDefaultTourIds 없이 tours만 삭제한 경우 자동 감지 및 복구)
+        if (!planData.deletedDefaultTourIds) planData.deletedDefaultTourIds = [];
+        defaultSydneyData.tours.forEach(defTour => {
+          if (!existingMap.has(defTour.id) && !planData.deletedDefaultTourIds.includes(defTour.id)) {
+            planData.deletedDefaultTourIds.push(defTour.id);
+          }
+        });
+        
+        const deletedIds = planData.deletedDefaultTourIds;
 
         const mergedTours = [];
         defaultSydneyData.tours.forEach(defTour => {
