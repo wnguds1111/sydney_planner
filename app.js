@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderTimeline();
   renderMemos();
   renderExpenses();
+  renderBookingSummary();
 
   // Google Maps 자동 로드
   activateMap();
@@ -391,6 +392,7 @@ function saveFlight() {
   closeFlightModal();
   renderFlights();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -450,6 +452,18 @@ function syncExpensesFromSelections() {
     });
   }
 
+  // 4. 투어
+  const selTours = planData.tours ? planData.tours.filter(t => t.selected) : [];
+  selTours.forEach(t => {
+    if (t.price) {
+      planData.expenses.push({
+        id: "auto_tour_" + t.id, timing: "pre", category: "관광/투어",
+        title: t.name, amountKrw: t.price, amount: t.price / exchangeRateAudToKrw,
+        memo: t.platform || "", isAuto: true
+      });
+    }
+  });
+
   if (typeof renderExpenses === 'function') renderExpenses();
 }
 
@@ -460,6 +474,7 @@ function selectFlight(id) {
   });
   renderFlights();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -469,6 +484,7 @@ function deleteFlight(id) {
   planData.flights = planData.flights.filter(x => x.id !== id);
   renderFlights();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -682,6 +698,7 @@ function saveHotel() {
   closeHotelModal();
   renderHotels();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -690,6 +707,7 @@ function selectHotel(id) {
   if (h) h.selected = !h.selected;
   renderHotels();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -698,6 +716,7 @@ function deleteHotel(id) {
   planData.hotels = planData.hotels.filter(x => x.id !== id);
   renderHotels();
   syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -1202,13 +1221,13 @@ function renderMemos() {
   const board = document.getElementById("memoBoard");
   if (!board) return;
   if (!planData.memos?.length) {
-    board.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px;font-weight:600;">아직 메모가 없어요! 💬</div>`;
+    board.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:14px;font-weight:600;">아직 메모가 없어요! 💬</div>`;
     return;
   }
   board.innerHTML = planData.memos.map(m => `
-    <div style="background:var(--white-glass);border:1px solid var(--border-glass);border-radius:10px;padding:10px 14px;">
-      <div style="font-size:12px;color:var(--white);font-weight:600;line-height:1.5;">${m.text}</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;font-weight:600;">${m.time}</div>
+    <div style="background:var(--white-glass);border:1px solid var(--border-glass);border-radius:12px;padding:12px 16px;">
+      <div style="font-size:14px;color:var(--white);font-weight:600;line-height:1.5;">${m.text}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;">${m.time}</div>
     </div>
   `).join("");
   board.scrollTop = board.scrollHeight;
@@ -1389,12 +1408,16 @@ function saveTour() {
   else planData.tours.push(entry);
   closeTourModal();
   renderTours();
+  syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
 function selectTour(id) {
   planData.tours.forEach(t => { t.selected = (t.id === id) ? !t.selected : false; });
   renderTours();
+  syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -1402,6 +1425,8 @@ function deleteTour(id) {
   if (!confirm("이 투어를 삭제할까요?")) return;
   planData.tours = planData.tours.filter(x => x.id !== id);
   renderTours();
+  syncExpensesFromSelections();
+  renderBookingSummary();
   scheduleSave();
 }
 
@@ -1677,5 +1702,155 @@ function renderExpenses() {
 
   preGrid.innerHTML  = makeHtml(preList,  true);
   tripGrid.innerHTML = makeHtml(tripList, false);
+}
+
+function renderBookingSummary() {
+  const container = document.getElementById("bookingSummaryContainer");
+  if (!container || !planData) return;
+
+  // 1. Flight selection
+  const selFlight = planData.flights.find(f => f.selected);
+  let flightHtml = "";
+  if (selFlight) {
+    const depStr = selFlight.depdate ? selFlight.depdate.substring(5).replace("-", "/") : "?";
+    const retStr = selFlight.rdate ? selFlight.rdate.substring(5).replace("-", "/") : "?";
+    const dateRange = (selFlight.depdate || selFlight.rdate) ? `🗓️ ${depStr} ~ ${retStr}` : "날짜 미정";
+    const linkBtn = selFlight.link ? `<a href="${selFlight.link}" target="_blank" class="summary-link-btn">🔗 예약 이동</a>` : "";
+    flightHtml = `
+      <div class="summary-card-content flight">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">✈️</span>
+          <span class="summary-card-title">선택된 항공권</span>
+        </div>
+        <div class="summary-card-body">
+          <div class="summary-card-main-val">${selFlight.price ? fmtPrice(selFlight.price) + '원' : '-'}</div>
+          <div class="summary-card-info">${dateRange}</div>
+          <div class="summary-card-info">총 ${selFlight.totalNights || 0}박 ${selFlight.totalDays || 0}일 (시드니 ${selFlight.sydneyDays || 0}일 / 퍼스 ${selFlight.perthDays || 0}일)</div>
+          ${selFlight.airline ? `<div class="summary-card-info">항공사: ${selFlight.airline}</div>` : ""}
+          ${selFlight.memo ? `<div class="summary-card-memo">💬 ${selFlight.memo}</div>` : ""}
+        </div>
+        ${linkBtn}
+      </div>
+    `;
+  } else {
+    flightHtml = `
+      <div class="summary-card-content empty" onclick="switchTab('flight', document.querySelector('[onclick*=\\'flight\\']'))">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">✈️</span>
+          <span class="summary-card-title">선택된 항공권</span>
+        </div>
+        <div class="summary-card-body empty-body">
+          <div class="empty-placeholder-text">선택한 항공권이 없습니다.</div>
+          <div class="empty-action-hint">아래 리스트에서 선택해 주세요.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 2. Hotel selections
+  const selHotels = planData.hotels.filter(h => h.selected);
+  let hotelHtml = "";
+  if (selHotels.length > 0) {
+    let hotelItems = selHotels.map(h => {
+      let nights = 0;
+      if (h.checkin && h.checkout) {
+        const ci = new Date(h.checkin); const co = new Date(h.checkout);
+        if (!isNaN(ci) && !isNaN(co)) nights = Math.round((co - ci) / 86400000);
+      }
+      const totalPrice = h.price && nights > 0 ? h.price * nights : h.price;
+      const ciStr = h.checkin ? h.checkin.substring(5).replace("-", "/") : "?";
+      const coStr = h.checkout ? h.checkout.substring(5).replace("-", "/") : "?";
+      const linkHtml = h.link ? `<a href="${h.link}" target="_blank" style="color:var(--blue-light); text-decoration:none; margin-left:4px;">🔗</a>` : "";
+      return `
+        <div class="summary-list-item">
+          <div style="font-weight: 700; color: #fff;">${h.name} ${linkHtml}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+            ${h.city === 'perth' ? '🦘 퍼스' : '🇦🇺 시드니'} | ${ciStr} ~ ${coStr} (${nights > 0 ? nights + '박' : '가격 정보 없음'})
+          </div>
+          <div style="font-size: 12px; color: var(--gold); font-weight: 800; margin-top: 2px;">${fmtPrice(totalPrice)}원</div>
+        </div>
+      `;
+    }).join("");
+
+    hotelHtml = `
+      <div class="summary-card-content hotel">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">🏨</span>
+          <span class="summary-card-title">선택된 호텔</span>
+        </div>
+        <div class="summary-card-body scrollable">
+          <div class="summary-list-wrapper">
+            ${hotelItems}
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    hotelHtml = `
+      <div class="summary-card-content empty" onclick="switchTab('hotel', document.querySelector('[onclick*=\\'hotel\\']'))">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">🏨</span>
+          <span class="summary-card-title">선택된 호텔</span>
+        </div>
+        <div class="summary-card-body empty-body">
+          <div class="empty-placeholder-text">선택한 호텔이 없습니다.</div>
+          <div class="empty-action-hint">호텔 비교 탭에서 선택해 주세요.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Tour selections
+  const selTours = planData.tours ? planData.tours.filter(t => t.selected) : [];
+  let tourHtml = "";
+  if (selTours.length > 0) {
+    let tourItems = selTours.map(t => {
+      const linkHtml = t.link ? `<a href="${t.link}" target="_blank" style="color:var(--blue-light); text-decoration:none; margin-left:4px;">🔗</a>` : "";
+      return `
+        <div class="summary-list-item">
+          <div style="font-weight: 700; color: #fff;">${t.name} ${linkHtml}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+            ${t.platform || '직접예약'} ${t.dur ? ' | ' + t.dur : ''}
+          </div>
+          <div style="font-size: 12px; color: var(--green); font-weight: 800; margin-top: 2px;">${fmtPrice(t.price)}원</div>
+        </div>
+      `;
+    }).join("");
+
+    tourHtml = `
+      <div class="summary-card-content tour">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">🎡</span>
+          <span class="summary-card-title">선택된 투어</span>
+        </div>
+        <div class="summary-card-body scrollable">
+          <div class="summary-list-wrapper">
+            ${tourItems}
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    tourHtml = `
+      <div class="summary-card-content empty" onclick="switchTab('tour', document.querySelector('[onclick*=\\'tour\\']'))">
+        <div class="summary-card-header">
+          <span class="summary-card-icon">🎡</span>
+          <span class="summary-card-title">선택된 투어</span>
+        </div>
+        <div class="summary-card-body empty-body">
+          <div class="empty-placeholder-text">선택한 투어가 없습니다.</div>
+          <div class="empty-action-hint">투어 비교 탭에서 선택해 주세요.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="booking-summary-dashboard">
+      ${flightHtml}
+      ${hotelHtml}
+      ${tourHtml}
+    </div>
+  `;
 }
 

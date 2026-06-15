@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🐻 시드니 여행 플래너</title>
   <meta name="description" content="시드니 여행을 위한 항공권 비교, 호텔 리스트업, 예약 체크리스트, 일정표 올인원 플래너">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 
@@ -46,7 +46,7 @@
 
 <!-- ================================================================ TAB BAR ================================================================ -->
 <div class="tabs-bar">
-  <button class="tab-btn active" onclick="switchTab('flight', this)"><span class="tab-icon">✈️</span> 항공권 비교</button>
+  <button class="tab-btn active" onclick="switchTab('flight', this)"><span class="tab-icon">🎟️</span> 예약 리스트</button>
   <button class="tab-btn" onclick="switchTab('hotel', this)"><span class="tab-icon">🏨</span> 호텔 비교</button>
   <button class="tab-btn" onclick="switchTab('tour', this)"><span class="tab-icon">🎢</span> 투어 비교</button>
   <button class="tab-btn" onclick="switchTab('checklist', this)"><span class="tab-icon">📋</span> 체크리스트</button>
@@ -57,13 +57,23 @@
 <!-- ================================================================ MAIN ================================================================ -->
 <div class="main-container">
 
-  <!-- ═══ TAB 1: 항공권 비교 ═══ -->
+  <!-- ═══ TAB 1: 예약 리스트 ═══ -->
   <div class="tab-panel active" id="panel-flight">
 
-    <div class="section-heading">
+    <div class="section-heading" style="margin-bottom: 12px;">
       <div>
-        <div class="section-title"><span class="section-title-icon">🦘</span> 항공권 비교</div>
-        <div class="section-sub">항공편을 골라주세요. 가는편 + 오는편 한 카드에! 🛫</div>
+        <div class="section-title"><span class="section-title-icon">🎟️</span> 나의 예약 리스트</div>
+        <div class="section-sub">항공권 / 호텔 / 투어 중 선택된 현황을 한눈에 확인하세요! ✨</div>
+      </div>
+    </div>
+
+    <!-- 예약 현황 대시보드 컨테이너 -->
+    <div id="bookingSummaryContainer"></div>
+
+    <div class="section-heading" style="margin-top: 40px; margin-bottom: 16px;">
+      <div>
+        <div class="section-title"><span class="section-title-icon">✈️</span> 항공권 비교 &amp; 추가</div>
+        <div class="section-sub">항공편들을 비교하고 최종 선택을 결정해 보세요! 🛫</div>
       </div>
       <button class="btn-add-entry" onclick="openFlightModal()">+ 항공권 추가</button>
     </div>
@@ -576,7 +586,7 @@
   </button>
   <div class="glass-card memo-card-popup" id="memoCardPopup">
     <div class="memo-popup-header">
-      <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+      <div style="font-weight: 800; font-size: 17px; color: #fff; display: flex; align-items: center; gap: 6px;">
         <span>💬</span> 메모 &amp; 공유
       </div>
       <button class="btn-close-memo" onclick="toggleMemoWidget()">✕</button>
@@ -595,6 +605,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
