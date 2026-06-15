@@ -259,6 +259,7 @@ async function loadData() {
       } else {
         const existingMap = new Map();
         planData.tours.forEach(t => existingMap.set(t.id, t));
+        const deletedIds = planData.deletedDefaultTourIds || [];
 
         const mergedTours = [];
         defaultSydneyData.tours.forEach(defTour => {
@@ -270,8 +271,10 @@ async function loadData() {
             });
             existingMap.delete(defTour.id);
           } else {
-            // 코드에 새로 추가된 기본 투어
-            mergedTours.push(JSON.parse(JSON.stringify(defTour)));
+            // 코드에 새로 추가된 기본 투어 (사용자가 삭제하지 않은 경우만 추가)
+            if (!deletedIds.includes(defTour.id)) {
+              mergedTours.push(JSON.parse(JSON.stringify(defTour)));
+            }
           }
         });
 
@@ -1494,6 +1497,12 @@ function selectTour(id) {
 
 function deleteTour(id) {
   if (!confirm("이 투어를 삭제할까요?")) return;
+  if (id && id.startsWith("t")) {
+    if (!planData.deletedDefaultTourIds) planData.deletedDefaultTourIds = [];
+    if (!planData.deletedDefaultTourIds.includes(id)) {
+      planData.deletedDefaultTourIds.push(id);
+    }
+  }
   planData.tours = planData.tours.filter(x => x.id !== id);
   renderTours();
   syncExpensesFromSelections();
