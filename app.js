@@ -247,7 +247,7 @@ async function loadData() {
       if (!planData.memos)   planData.memos   = [];
       if (!planData.expenses) planData.expenses = [];
       // 투어 기본값 강제 갱신 (링크 등 업데이트 반영)
-      planData.tours = JSON.parse(JSON.stringify(defaultSydneyData.tours));
+      if (!planData.tours) planData.tours = JSON.parse(JSON.stringify(defaultSydneyData.tours));
       console.log("✅ 시드니 플래너 로드 완료");
     } else {
       planData = { ...JSON.parse(JSON.stringify(defaultSydneyData)), checklistGroups: JSON.parse(JSON.stringify(defaultChecklistGroups)) };
