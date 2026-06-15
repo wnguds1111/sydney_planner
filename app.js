@@ -512,6 +512,7 @@ function renderFlights() {
   const emptyEl  = document.getElementById("flightEmptyState");
   const gridEl   = document.getElementById("flightGrid");
   const bannerEl = document.getElementById("flightSummaryBanner");
+  if (!emptyEl || !gridEl) return;
 
   let list = [...planData.flights];
 
@@ -1708,50 +1709,61 @@ function renderBookingSummary() {
   const container = document.getElementById("bookingSummaryContainer");
   if (!container || !planData) return;
 
-  // 1. Flight selection
+  // 1. Flight Section
   const selFlight = planData.flights.find(f => f.selected);
   let flightHtml = "";
   if (selFlight) {
     const depStr = selFlight.depdate ? selFlight.depdate.substring(5).replace("-", "/") : "?";
     const retStr = selFlight.rdate ? selFlight.rdate.substring(5).replace("-", "/") : "?";
     const dateRange = (selFlight.depdate || selFlight.rdate) ? `🗓️ ${depStr} ~ ${retStr}` : "날짜 미정";
-    const linkBtn = selFlight.link ? `<a href="${selFlight.link}" target="_blank" class="summary-link-btn">🔗 예약 이동</a>` : "";
+    const linkBtn = selFlight.link ? `<a href="${selFlight.link}" target="_blank" class="summary-link-btn">🔗 항공권 예약 이동</a>` : "";
+    const imageHtml = selFlight.imageUrl ? `
+      <div class="summary-flight-image" onclick="window.open('${selFlight.imageUrl}', '_blank')" title="클릭하여 원본 이미지 보기">
+        <img src="${selFlight.imageUrl}" alt="항공권 캡쳐 이미지">
+      </div>
+    ` : "";
+
     flightHtml = `
-      <div class="summary-card-content flight">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">✈️</span>
-          <span class="summary-card-title">선택된 항공권</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">✈️</span>
+          <span class="booking-section-title">항공권 예약 내역</span>
         </div>
-        <div class="summary-card-body">
-          <div class="summary-card-main-val">${selFlight.price ? fmtPrice(selFlight.price) + '원' : '-'}</div>
-          <div class="summary-card-info">${dateRange}</div>
-          <div class="summary-card-info">총 ${selFlight.totalNights || 0}박 ${selFlight.totalDays || 0}일 (시드니 ${selFlight.sydneyDays || 0}일 / 퍼스 ${selFlight.perthDays || 0}일)</div>
-          ${selFlight.airline ? `<div class="summary-card-info">항공사: ${selFlight.airline}</div>` : ""}
-          ${selFlight.memo ? `<div class="summary-card-memo">💬 ${selFlight.memo}</div>` : ""}
+        <div class="summary-card-content flight-section-card">
+          <div class="${selFlight.imageUrl ? 'flight-details-grid' : ''}">
+            <div class="flight-text-details">
+              <div class="summary-card-main-val">${selFlight.price ? fmtPrice(selFlight.price) + '원' : '-'}</div>
+              <div class="summary-card-info-large">${dateRange}</div>
+              <div class="summary-card-info-large">총 ${selFlight.totalNights || 0}박 ${selFlight.totalDays || 0}일 (시드니 ${selFlight.sydneyDays || 0}일 / 퍼스 ${selFlight.perthDays || 0}일)</div>
+              ${selFlight.airline ? `<div class="summary-card-info-large" style="margin-top: 6px;">항공사: <strong>${selFlight.airline}</strong></div>` : ""}
+              ${selFlight.memo ? `<div class="summary-card-memo" style="margin-top: 12px;">💬 ${selFlight.memo}</div>` : ""}
+              ${linkBtn}
+            </div>
+            ${imageHtml}
+          </div>
         </div>
-        ${linkBtn}
       </div>
     `;
   } else {
     flightHtml = `
-      <div class="summary-card-content empty" onclick="switchTab('flight', document.querySelector('[onclick*=\\'flight\\']'))">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">✈️</span>
-          <span class="summary-card-title">선택된 항공권</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">✈️</span>
+          <span class="booking-section-title">항공권 예약 내역</span>
         </div>
-        <div class="summary-card-body empty-body">
-          <div class="empty-placeholder-text">선택한 항공권이 없습니다.</div>
-          <div class="empty-action-hint">아래 리스트에서 선택해 주세요.</div>
+        <div class="summary-card-content empty" onclick="switchTab('flight', document.querySelector('[onclick*=\\'flight\\']'))">
+          <div class="empty-placeholder-text">선택된 항공권이 없습니다.</div>
+          <div class="empty-action-hint">이곳을 클릭하여 마음에 드는 일정을 선택해 주세요! 🛫</div>
         </div>
       </div>
     `;
   }
 
-  // 2. Hotel selections
+  // 2. Hotel Section
   const selHotels = planData.hotels.filter(h => h.selected);
   let hotelHtml = "";
   if (selHotels.length > 0) {
-    let hotelItems = selHotels.map(h => {
+    let hotelCards = selHotels.map(h => {
       let nights = 0;
       if (h.checkin && h.checkout) {
         const ci = new Date(h.checkin); const co = new Date(h.checkout);
@@ -1760,93 +1772,109 @@ function renderBookingSummary() {
       const totalPrice = h.price && nights > 0 ? h.price * nights : h.price;
       const ciStr = h.checkin ? h.checkin.substring(5).replace("-", "/") : "?";
       const coStr = h.checkout ? h.checkout.substring(5).replace("-", "/") : "?";
-      const linkHtml = h.link ? `<a href="${h.link}" target="_blank" style="color:var(--blue-light); text-decoration:none; margin-left:4px;">🔗</a>` : "";
+      const linkBtn = h.link ? `<a href="${h.link}" target="_blank" class="summary-link-btn" style="margin-top: 10px; width: 100%;">🔗 호텔 예약 링크</a>` : "";
       return `
-        <div class="summary-list-item">
-          <div style="font-weight: 700; color: #fff;">${h.name} ${linkHtml}</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-            ${h.city === 'perth' ? '🦘 퍼스' : '🇦🇺 시드니'} | ${ciStr} ~ ${coStr} (${nights > 0 ? nights + '박' : '가격 정보 없음'})
+        <div class="summary-item-card hotel">
+          <div class="summary-item-card-top">
+            <div style="font-size: 11px; font-weight: 700; color: var(--blue-sky); text-transform: uppercase; margin-bottom: 4px;">
+              ${h.city === 'perth' ? '🦘 퍼스 숙소' : '🇦🇺 시드니 숙소'}
+            </div>
+            <div class="summary-item-card-name">${h.name}</div>
+            <div class="summary-item-card-dates">🗓️ ${ciStr} ~ ${coStr} (${nights > 0 ? nights + '박' : '박수 미정'})</div>
           </div>
-          <div style="font-size: 12px; color: var(--gold); font-weight: 800; margin-top: 2px;">${fmtPrice(totalPrice)}원</div>
+          <div class="summary-item-card-bottom">
+            <div class="summary-item-card-price">
+              <span class="price-num">${fmtPrice(totalPrice)}원</span>
+              <span class="price-lbl">${nights > 0 ? '(' + nights + '박 총액)' : '(1박)'}</span>
+            </div>
+            ${h.memo ? `<div class="summary-card-memo">💬 ${h.memo}</div>` : ""}
+            ${linkBtn}
+          </div>
         </div>
       `;
     }).join("");
 
     hotelHtml = `
-      <div class="summary-card-content hotel">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">🏨</span>
-          <span class="summary-card-title">선택된 호텔</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">🏨</span>
+          <span class="booking-section-title">호텔 예약 내역</span>
         </div>
-        <div class="summary-card-body scrollable">
-          <div class="summary-list-wrapper">
-            ${hotelItems}
-          </div>
+        <div class="booking-items-grid">
+          ${hotelCards}
         </div>
       </div>
     `;
   } else {
     hotelHtml = `
-      <div class="summary-card-content empty" onclick="switchTab('hotel', document.querySelector('[onclick*=\\'hotel\\']'))">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">🏨</span>
-          <span class="summary-card-title">선택된 호텔</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">🏨</span>
+          <span class="booking-section-title">호텔 예약 내역</span>
         </div>
-        <div class="summary-card-body empty-body">
-          <div class="empty-placeholder-text">선택한 호텔이 없습니다.</div>
-          <div class="empty-action-hint">호텔 비교 탭에서 선택해 주세요.</div>
+        <div class="summary-card-content empty" onclick="switchTab('hotel', document.querySelector('[onclick*=\\'hotel\\']'))">
+          <div class="empty-placeholder-text">선택된 호텔이 없습니다.</div>
+          <div class="empty-action-hint">이곳을 클릭하여 호텔 비교 탭에서 숙소를 선택해 주세요! 🏨</div>
         </div>
       </div>
     `;
   }
 
-  // 3. Tour selections
+  // 3. Tour Section
   const selTours = planData.tours ? planData.tours.filter(t => t.selected) : [];
   let tourHtml = "";
   if (selTours.length > 0) {
-    let tourItems = selTours.map(t => {
-      const linkHtml = t.link ? `<a href="${t.link}" target="_blank" style="color:var(--blue-light); text-decoration:none; margin-left:4px;">🔗</a>` : "";
+    let tourCards = selTours.map(t => {
+      const linkBtn = t.link ? `<a href="${t.link}" target="_blank" class="summary-link-btn" style="margin-top: 10px; width: 100%;">🔗 투어 예약 링크</a>` : "";
       return `
-        <div class="summary-list-item">
-          <div style="font-weight: 700; color: #fff;">${t.name} ${linkHtml}</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-            ${t.platform || '직접예약'} ${t.dur ? ' | ' + t.dur : ''}
+        <div class="summary-item-card tour">
+          <div class="summary-item-card-top">
+            <div style="font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 4px;">
+              ${t.platform || '직접예약'}
+            </div>
+            <div class="summary-item-card-name">${t.name}</div>
+            <div class="summary-item-card-dates">${t.dur ? '⏱ 소요 시간: ' + t.dur : '시간 정보 없음'}</div>
           </div>
-          <div style="font-size: 12px; color: var(--green); font-weight: 800; margin-top: 2px;">${fmtPrice(t.price)}원</div>
+          <div class="summary-item-card-bottom">
+            <div class="summary-item-card-price">
+              <span class="price-num" style="color: var(--green);">${fmtPrice(t.price)}원</span>
+              <span class="price-lbl">/ 1인</span>
+            </div>
+            ${t.memo ? `<div class="summary-card-memo" style="border-left-color: var(--green);">💬 ${t.memo}</div>` : ""}
+            ${linkBtn}
+          </div>
         </div>
       `;
     }).join("");
 
     tourHtml = `
-      <div class="summary-card-content tour">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">🎡</span>
-          <span class="summary-card-title">선택된 투어</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">🎡</span>
+          <span class="booking-section-title">투어 예약 내역</span>
         </div>
-        <div class="summary-card-body scrollable">
-          <div class="summary-list-wrapper">
-            ${tourItems}
-          </div>
+        <div class="booking-items-grid">
+          ${tourCards}
         </div>
       </div>
     `;
   } else {
     tourHtml = `
-      <div class="summary-card-content empty" onclick="switchTab('tour', document.querySelector('[onclick*=\\'tour\\']'))">
-        <div class="summary-card-header">
-          <span class="summary-card-icon">🎡</span>
-          <span class="summary-card-title">선택된 투어</span>
+      <div class="booking-section">
+        <div class="booking-section-header">
+          <span class="booking-section-icon">🎡</span>
+          <span class="booking-section-title">투어 예약 내역</span>
         </div>
-        <div class="summary-card-body empty-body">
-          <div class="empty-placeholder-text">선택한 투어가 없습니다.</div>
-          <div class="empty-action-hint">투어 비교 탭에서 선택해 주세요.</div>
+        <div class="summary-card-content empty" onclick="switchTab('tour', document.querySelector('[onclick*=\\'tour\\']'))">
+          <div class="empty-placeholder-text">선택된 투어가 없습니다.</div>
+          <div class="empty-action-hint">이곳을 클릭하여 투어 비교 탭에서 액티비티를 선택해 주세요! 🎡</div>
         </div>
       </div>
     `;
   }
 
   container.innerHTML = `
-    <div class="booking-summary-dashboard">
+    <div class="booking-summary-dashboard-stacked">
       ${flightHtml}
       ${hotelHtml}
       ${tourHtml}
