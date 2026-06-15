@@ -1011,6 +1011,17 @@ function toggleDayEditMode() {
   renderTimeline();
 }
 
+function getDayLabel(d) {
+  const startDate = new Date("2026-10-22");
+  const targetDate = new Date(startDate);
+  targetDate.setDate(startDate.getDate() + (d - 1));
+  const m = targetDate.getMonth() + 1;
+  const day = targetDate.getDate();
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  const wd = weekdays[targetDate.getDay()];
+  return `${m}/${day}(${wd})`;
+}
+
 function renderDayTabs() {
   if (!planData) return;
   const container = document.getElementById("dayTabsMini");
@@ -1018,10 +1029,10 @@ function renderDayTabs() {
   const keys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
   container.innerHTML = keys.map(d => {
     const delBtn = (dayEditMode && keys.length > 1)
-      ? `<button onclick="deleteDay(${d})" style="position:absolute;top:-6px;right:-6px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;" title="Day ${d} 삭제">✕</button>`
+      ? `<button onclick="deleteDay(${d})" style="position:absolute;top:-6px;right:-6px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;" title="${getDayLabel(d)} 삭제">✕</button>`
       : "";
     return `<div style="display:inline-flex;align-items:center;position:relative;">
-      <button class="day-tab-mini ${d === currentDay ? 'active' : ''}" onclick="switchDay(${d})">Day ${d}</button>
+      <button class="day-tab-mini ${d === currentDay ? 'active' : ''}" onclick="switchDay(${d})">${getDayLabel(d)}</button>
       ${delBtn}
     </div>`;
   }).join("");
@@ -1038,7 +1049,7 @@ function deleteDay(d) {
   const keys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
   if (keys.length <= 1) { alert("최소 1개의 Day는 남겨야 합니다."); return; }
   const count = (planData.days[d] || []).length;
-  if (!confirm(`Day ${d}를 삭제할까요?${count ? ` (일정 ${count}개 포함)` : ""}`)) return;
+  if (!confirm(`${getDayLabel(d)} 일정을 삭제할까요?${count ? ` (일정 ${count}개 포함)` : ""}`)) return;
   delete planData.days[d];
   // Day 번호 재정렬
   const remaining = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
@@ -1130,7 +1141,7 @@ function initPlaceAutocomplete() {
 function openAddModal(itemId) {
   const dayKeys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
   const select  = document.getElementById("modalDay");
-  select.innerHTML = dayKeys.map(d => `<option value="${d}" ${d===currentDay?"selected":""}>Day ${d}</option>`).join("");
+  select.innerHTML = dayKeys.map(d => `<option value="${d}" ${d===currentDay?"selected":""}>${getDayLabel(d)}</option>`).join("");
   document.getElementById("editItemId").value = itemId || "";
   document.getElementById("modalTitleText").textContent = itemId ? "📍 장소 수정" : "📍 새 장소 추가";
   if (itemId) {
@@ -1214,6 +1225,25 @@ function postMemo() {
   input.value = "";
   renderMemos();
   scheduleSave();
+}
+
+function toggleMemoWidget() {
+  const widget = document.getElementById("floatingMemoWidget");
+  if (!widget) return;
+  const isExpanded = widget.classList.toggle("expanded");
+  const triggerBtn = document.getElementById("memoTriggerBtn");
+  if (triggerBtn) {
+    const iconSpan = triggerBtn.querySelector(".memo-icon");
+    if (iconSpan) {
+      iconSpan.textContent = isExpanded ? "✕" : "💬";
+    }
+  }
+  if (isExpanded) {
+    const input = document.getElementById("memoInput");
+    if (input) input.focus();
+    const board = document.getElementById("memoBoard");
+    if (board) board.scrollTop = board.scrollHeight;
+  }
 }
 
 // ================================================================

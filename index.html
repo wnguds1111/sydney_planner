@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🐻 시드니 여행 플래너</title>
   <meta name="description" content="시드니 여행을 위한 항공권 비교, 호텔 리스트업, 예약 체크리스트, 일정표 올인원 플래너">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -240,14 +240,6 @@
           <div class="day-tabs-mini" id="dayTabsMini"></div>
           <div class="timeline" id="timelineList"></div>
           <button class="btn-add-place" onclick="openAddModal()">+ 새로운 장소 추가하기</button>
-        </div>
-        <div class="glass-card" style="padding: 24px;">
-          <div style="font-size:15px; font-weight:800; margin-bottom:14px;">💬 메모 &amp; 공유</div>
-          <div id="memoBoard" style="max-height: 200px; overflow-y:auto; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;"></div>
-          <div style="display:flex; gap:8px;">
-            <input class="form-input" id="memoInput" placeholder="메모를 남겨보세요..." onkeypress="if(event.key==='Enter') postMemo()" style="flex:1;">
-            <button class="btn-map-activate" onclick="postMemo()">남기기</button>
-          </div>
         </div>
       </div>
     </div>
@@ -577,10 +569,32 @@
   </div>
 </div>
 
+<!-- ═══ FLOATING MEMO WIDGET ═══ -->
+<div class="floating-memo-widget" id="floatingMemoWidget">
+  <button class="memo-trigger-btn" id="memoTriggerBtn" onclick="toggleMemoWidget()" title="메모 열기">
+    <span class="memo-icon">💬</span>
+  </button>
+  <div class="glass-card memo-card-popup" id="memoCardPopup">
+    <div class="memo-popup-header">
+      <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+        <span>💬</span> 메모 &amp; 공유
+      </div>
+      <button class="btn-close-memo" onclick="toggleMemoWidget()">✕</button>
+    </div>
+    <div class="memo-popup-body" id="memoBoard">
+      <!-- Memos will render here -->
+    </div>
+    <div class="memo-popup-footer">
+      <input class="form-input memo-input-field" id="memoInput" placeholder="메모를 남겨보세요..." onkeypress="if(event.key==='Enter') postMemo()">
+      <button class="btn-send-memo" onclick="postMemo()">남기기</button>
+    </div>
+  </div>
+</div>
+
 <footer>🐨 Sydney Travel Planner &nbsp;·&nbsp; 쇠돌이 &amp; 미녀의 여행 계획표 🦘 &nbsp;·&nbsp; Firebase Synced 🤍</footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
