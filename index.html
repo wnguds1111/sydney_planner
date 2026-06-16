@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🐻 시드니 여행 플래너</title>
   <meta name="description" content="시드니 여행을 위한 항공권 비교, 호텔 리스트업, 예약 체크리스트, 일정표 올인원 플래너">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <meta name="theme-color" content="#fffaf0">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 
@@ -106,13 +107,13 @@
       </div>
       <div id="hotelWrap" style="display:none; flex-direction:column; gap:40px;">
         <div id="sydneySection">
-          <div style="font-size:18px; font-weight:800; color:#38bdf8; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+          <div style="font-size:18px; font-weight:600; color:var(--brand-teal); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
             🇦🇺 시드니 숙소
           </div>
           <div class="hotel-compare-grid" id="hotelGridSydney"></div>
         </div>
         <div id="perthSection">
-          <div style="font-size:18px; font-weight:800; color:#fbbf24; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+          <div style="font-size:18px; font-weight:600; color:var(--brand-ochre); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
             🦘 퍼스 숙소
           </div>
           <div class="hotel-compare-grid" id="hotelGridPerth"></div>
@@ -221,7 +222,7 @@
         <div class="section-sub">시드니 여행 중 발생한 모든 지출을 한눈에 관리하세요! 💳</div>
       </div>
       <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-end;">
-        <div class="hero-badge" id="exchangeRateBadge" style="margin: 0; font-size:12px; font-weight: bold; background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); cursor: pointer;" onclick="fetchExchangeRate()">💰 실시간 환율 로딩 중...</div>
+        <div class="hero-badge" id="exchangeRateBadge" style="margin: 0; font-size:12px; font-weight: 600; cursor: pointer;" onclick="fetchExchangeRate()">💰 실시간 환율 로딩 중...</div>
         <button class="btn-add-entry" onclick="openExpenseModal()">+ 지출 추가</button>
       </div>
     </div>
@@ -230,9 +231,9 @@
     <div id="expenseSummaryBanner" class="summary-banner" style="margin-bottom:24px;">
       <div class="summary-item"><div class="summary-lbl">총 지출 (AUD)</div><div class="summary-val accent" id="summaryTotalAud">A$ 0</div></div>
       <div class="summary-divider"></div>
-      <div class="summary-item"><div class="summary-lbl">사전 지출 (KRW 환산)</div><div class="summary-val" id="summaryPreKrw" style="color:#fbbf24;">₩ 0</div></div>
+      <div class="summary-item"><div class="summary-lbl">사전 지출 (KRW 환산)</div><div class="summary-val" id="summaryPreKrw" style="color:var(--brand-ochre);">₩ 0</div></div>
       <div class="summary-divider"></div>
-      <div class="summary-item"><div class="summary-lbl">여행 중 지출 (KRW 환산)</div><div class="summary-val" id="summaryTripKrw" style="color:#a78bfa;">₩ 0</div></div>
+      <div class="summary-item"><div class="summary-lbl">여행 중 지출 (KRW 환산)</div><div class="summary-val" id="summaryTripKrw" style="color:var(--brand-lavender);">₩ 0</div></div>
     </div>
 
     <!-- 지출 리스트 -->
@@ -246,14 +247,14 @@
       
       <div id="expenseWrap" class="expense-split-layout" style="display:none;">
         <div>
-          <div style="font-size:16px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-            <span style="color:#fbbf24;">🛫 사전 지출</span>
+          <div style="font-size:16px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--brand-ochre);">🛫 사전 지출</span>
           </div>
           <div class="flight-compare-table" id="expensePreGrid" style="display:flex; flex-direction:column; gap:12px;"></div>
         </div>
         <div>
-          <div style="font-size:16px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-            <span style="color:#a78bfa;">🐨 여행 중 지출</span>
+          <div style="font-size:16px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--brand-lavender);">🐨 여행 중 지출</span>
           </div>
           <div class="flight-compare-table" id="expenseTripGrid" style="display:flex; flex-direction:column; gap:12px;"></div>
         </div>
@@ -275,8 +276,8 @@
       <div class="form-group" style="margin-bottom: 20px;">
         <label class="form-label">지출 시기</label>
         <div style="display:flex; gap:16px;">
-          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="pre" checked onchange="updateExpenseTimingUI()"> 🛫 사전 지출</label>
-          <label style="color:#fff; font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="trip" onchange="updateExpenseTimingUI()"> 🐨 여행 중 지출</label>
+          <label style="color:var(--ink); font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="pre" checked onchange="updateExpenseTimingUI()"> 🛫 사전 지출</label>
+          <label style="color:var(--ink); font-size:13px; font-weight:600; cursor:pointer;"><input type="radio" name="expenseTiming" value="trip" onchange="updateExpenseTimingUI()"> 🐨 여행 중 지출</label>
         </div>
       </div>
       <div class="form-group">
@@ -401,8 +402,8 @@
         <div class="form-group" style="grid-column:1/-1;">
           <label class="form-label">📸 캡쳐 이미지 첨부</label>
           <input type="file" id="fm_image_file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-          <div id="imagePreviewArea" tabindex="0" onclick="document.getElementById('fm_image_file').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.2)';" ondrop="event.preventDefault(); this.style.borderColor='rgba(255,255,255,0.2)'; document.getElementById('fm_image_file').files = event.dataTransfer.files; handleImageUpload({target: document.getElementById('fm_image_file')});" onpaste="handleImagePaste(event)" style="width:100%; height:250px; background:rgba(0,0,0,0.3); border:2px dashed rgba(255,255,255,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; transition:border 0.2s; outline:none;">
-            <span style="color:var(--text-sub); pointer-events:none; font-weight:600; text-align:center;">+ 클릭, 드래그 또는<br>영역 선택 후 Ctrl+V (붙여넣기)</span>
+          <div id="imagePreviewArea" tabindex="0" onclick="document.getElementById('fm_image_file').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--brand-teal)';" ondragleave="this.style.borderColor='var(--hairline)';" ondrop="event.preventDefault(); this.style.borderColor='var(--hairline)'; document.getElementById('fm_image_file').files = event.dataTransfer.files; handleImageUpload({target: document.getElementById('fm_image_file')});" onpaste="handleImagePaste(event)" style="width:100%; height:250px; background:var(--surface-soft); border:2px dashed var(--hairline); border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; transition:border 0.2s; outline:none;">
+            <span style="color:var(--muted); pointer-events:none; font-weight:600; text-align:center;">+ 클릭, 드래그 또는<br>영역 선택 후 Ctrl+V (붙여넣기)</span>
           </div>
           <input type="hidden" id="fm_image_base64">
         </div>
@@ -544,10 +545,13 @@
   </button>
   <div class="glass-card memo-card-popup" id="memoCardPopup">
     <div class="memo-popup-header">
-      <div style="font-weight: 800; font-size: 17px; color: #fff; display: flex; align-items: center; gap: 6px;">
-        <span>💬</span> 메모 &amp; 공유
+      <div style="font-weight: 600; font-size: 17px; color: var(--ink); display: flex; align-items: center; gap: 8px; font-family: 'Noto Sans KR', sans-serif;">
+        <span>📝</span> 우리의 메모장
       </div>
       <button class="btn-close-memo" onclick="toggleMemoWidget()">✕</button>
+    </div>
+    <div class="memo-search-bar">
+      <input class="memo-search-input" id="memoSearchInput" placeholder="🔍 메모 검색..." oninput="renderMemos()">
     </div>
     <div class="memo-popup-body" id="memoBoard">
       <!-- Memos will render here -->
@@ -563,6 +567,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

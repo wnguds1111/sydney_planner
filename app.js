@@ -320,24 +320,23 @@ function showLoadErrorAlert() {
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(239, 68, 68, 0.95);
+    background: #ef4444;
     color: white;
     text-align: center;
     padding: 12px 24px;
     font-size: 14px;
     font-weight: 700;
     z-index: 10000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    backdrop-filter: blur(8px);
     transition: all 0.3s ease;
   `;
   banner.innerHTML = `
     <span>⚠️ 실시간 데이터베이스 로드에 실패했습니다. 변경 사항이 유실될 수 있으니 페이지를 새로고침 해주세요.</span>
-    <button onclick="location.reload()" style="background: white; color: #ef4444; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 12px; transition: opacity 0.2s;">새로고침</button>
+    <button onclick="location.reload()" style="background: white; color: #ef4444; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px;">새로고침</button>
   `;
   document.body.appendChild(banner);
   document.body.style.paddingTop = "45px";
@@ -627,21 +626,21 @@ function renderFlights() {
     
     // 사진 캡쳐 이미지 (리스트에 표시)
     const imageHtml = f.imageUrl ? `
-      <div style="margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); width:100%; background:rgba(0,0,0,0.15);">
+      <div style="margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid var(--hairline); width:100%; background:var(--surface-soft);">
         <img src="${f.imageUrl}" style="width:100%; height:auto; max-height:350px; object-fit:contain; display:block; margin: 0 auto;" alt="항공 일정 캡쳐">
       </div>
     ` : "";
 
     const linkHtml = f.link ? `
       <div style="margin-top:12px;">
-        <a href="${f.link}" target="_blank" style="color:#38bdf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+        <a href="${f.link}" target="_blank" style="color:var(--brand-teal); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600;">
           🔗 항공권 예약 링크 이동
         </a>
       </div>
     ` : "";
 
     const badges = [];
-    if (f.annualLeave) badges.push(`<span class="badge-pill" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;">🏖️ 연차 ${f.annualLeave}일</span>`);
+    if (f.annualLeave) badges.push(`<span class="badge-pill" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--success);">🏖️ 연차 ${f.annualLeave}일</span>`);
 
     function formatDateForFlight(dateStr) {
       if (!dateStr) return "";
@@ -657,7 +656,7 @@ function renderFlights() {
     if (f.depdate || f.rdate) {
       const depStr = formatDateForFlight(f.depdate) || "?";
       const retStr = formatDateForFlight(f.rdate) || "?";
-      dateRangeHtml = `<div style="font-size:13px; font-weight:600; color:#34d399; margin-bottom:4px;">🗓️ ${depStr} ~ ${retStr}</div>`;
+      dateRangeHtml = `<div style="font-size:13px; font-weight:600; color:var(--success); margin-bottom:4px;">🗓️ ${depStr} ~ ${retStr}</div>`;
     }
 
     return `
@@ -858,7 +857,7 @@ function renderHotels() {
     if (h.checkin || h.checkout) {
       const ci = h.checkin ? h.checkin.substring(5).replace("-", "/") : "?";
       const co = h.checkout ? h.checkout.substring(5).replace("-", "/") : "?";
-      datesHtml = `<div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">🗓️ ${ci} ~ ${co}</div>`;
+      datesHtml = `<div style="font-size:12px; font-weight:600; color:var(--success); margin-bottom:8px;">🗓️ ${ci} ~ ${co}</div>`;
     }
 
     // Calculate total price
@@ -1105,9 +1104,9 @@ function toggleDayEditMode() {
   const btn = document.getElementById("btnEditDays");
   if (btn) {
     btn.textContent = dayEditMode ? "✕ 닫기" : "✏️ 편집";
-    btn.style.background = dayEditMode ? "rgba(239,68,68,0.15)" : "";
-    btn.style.borderColor = dayEditMode ? "rgba(239,68,68,0.35)" : "";
-    btn.style.color = dayEditMode ? "#f87171" : "";
+    btn.style.background = dayEditMode ? "rgba(239,68,68,0.08)" : "";
+    btn.style.borderColor = dayEditMode ? "rgba(239,68,68,0.25)" : "";
+    btn.style.color = dayEditMode ? "#dc2626" : "";
   }
   renderDayTabs();
   renderTimeline();
@@ -1131,7 +1130,7 @@ function renderDayTabs() {
   const keys = Object.keys(planData.days).map(Number).sort((a,b)=>a-b);
   container.innerHTML = keys.map(d => {
     const delBtn = (dayEditMode && keys.length > 1)
-      ? `<button onclick="deleteDay(${d})" style="position:absolute;top:-6px;right:-6px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;" title="${getDayLabel(d)} 삭제">✕</button>`
+      ? `<button onclick="deleteDay(${d})" style="position:absolute;top:-6px;right:-6px;background:#ef4444;border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;" title="${getDayLabel(d)} 삭제">✕</button>`
       : "";
     return `<div style="display:inline-flex;align-items:center;position:relative;">
       <button class="day-tab-mini ${d === currentDay ? 'active' : ''}" onclick="switchDay(${d})">${getDayLabel(d)}</button>
@@ -1199,8 +1198,8 @@ function renderTimeline() {
       </div>
       ${dayEditMode ? `
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
-          <button onclick="openAddModal(${item.id})" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700;font-family:inherit;">수정</button>
-          <button onclick="deletePlace(${currentDay},${item.id})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700;font-family:inherit;">삭제</button>
+          <button onclick="openAddModal(${item.id})" style="background:rgba(26,58,58,0.06);border:1px solid rgba(26,58,58,0.15);color:var(--brand-teal);cursor:pointer;font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;font-family:inherit;">수정</button>
+          <button onclick="deletePlace(${currentDay},${item.id})" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);color:#dc2626;cursor:pointer;font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;font-family:inherit;">삭제</button>
         </div>
       ` : ""}
     </div>
@@ -1303,16 +1302,27 @@ function renderMemos() {
   if (!planData) return;
   const board = document.getElementById("memoBoard");
   if (!board) return;
-  if (!planData.memos?.length) {
-    board.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:14px;font-weight:600;">아직 메모가 없어요! 💬</div>`;
+  const searchVal = (document.getElementById("memoSearchInput")?.value || "").trim().toLowerCase();
+  let memos = planData.memos || [];
+  if (searchVal) {
+    memos = memos.filter(m => m.text.toLowerCase().includes(searchVal));
+  }
+  if (!memos.length) {
+    board.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#a16207;font-size:14px;font-weight:500;font-family:'Noto Sans KR',sans-serif;">${searchVal ? '검색 결과가 없어요 🔍' : '메모를 남겨보세요 ✏️'}</div>`;
     return;
   }
-  board.innerHTML = planData.memos.map(m => `
-    <div style="background:var(--white-glass);border:1px solid var(--border-glass);border-radius:12px;padding:12px 16px;">
-      <div style="font-size:14px;color:var(--white);font-weight:600;line-height:1.5;">${m.text}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;">${m.time}</div>
+  board.innerHTML = memos.map(m => {
+    const highlighted = searchVal
+      ? m.text.replace(new RegExp(`(${searchVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark style="background:#fde047;color:#451a03;border-radius:2px;padding:0 1px;">$1</mark>')
+      : m.text;
+    return `
+    <div class="memo-note-item">
+      <div class="memo-note-dot"></div>
+      <div class="memo-note-text">${highlighted}</div>
+      <div class="memo-note-time">${m.time}</div>
     </div>
-  `).join("");
+  `;
+  }).join("");
   board.scrollTop = board.scrollHeight;
 }
 
@@ -1445,10 +1455,10 @@ function updateGoogleMapMarkers() {
 let tourFilter = "all";
 
 const PLATFORM_STYLE = {
-  "KKday":      { bg:"rgba(255,107,53,0.15)",  border:"rgba(255,107,53,0.4)",  color:"#ff9a6c"  },
-  "마이리얼트립":{ bg:"rgba(52,211,153,0.15)",  border:"rgba(52,211,153,0.4)",  color:"#34d399"  },
-  "트리플":     { bg:"rgba(167,139,250,0.15)", border:"rgba(167,139,250,0.4)", color:"#a78bfa"  },
-  "직접예약":   { bg:"rgba(148,163,184,0.12)", border:"rgba(148,163,184,0.3)", color:"#94a3b8"  },
+  "KKday":      { bg:"rgba(255,107,53,0.08)",  border:"rgba(255,107,53,0.25)",  color:"#c2410c"  },
+  "마이리얼트립":{ bg:"rgba(34,197,94,0.08)",  border:"rgba(34,197,94,0.25)",  color:"#16a34a"  },
+  "트리플":     { bg:"rgba(139,92,246,0.08)", border:"rgba(139,92,246,0.25)", color:"#7c3aed"  },
+  "직접예약":   { bg:"rgba(107,114,128,0.08)", border:"rgba(107,114,128,0.2)", color:"#6b7280"  },
 };
 const CAT_ICON = { "관광":"🏛", "액티비티":"🏄", "식사":"🦞", "기타":"📦" };
 
@@ -1497,7 +1507,8 @@ function saveTour() {
 }
 
 function selectTour(id) {
-  planData.tours.forEach(t => { t.selected = (t.id === id) ? !t.selected : false; });
+  const tour = planData.tours.find(t => t.id === id);
+  if (tour) tour.selected = !tour.selected;
   renderTours();
   syncExpensesFromSelections();
   renderBookingSummary();
@@ -1634,11 +1645,11 @@ function updateExpensePreview() {
   if (timing === "pre") {
     // KRW 입력 → AUD 환산 미리보기
     const aud = val / exchangeRateAudToKrw;
-    preview.innerHTML = `<span style="color:#38bdf8;">≈ A$ ${aud.toFixed(2)}</span> <span style="color:var(--text-muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
+    preview.innerHTML = `<span style="color:var(--brand-teal);">≈ A$ ${aud.toFixed(2)}</span> <span style="color:var(--muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
   } else {
     // AUD 입력 → KRW 환산 미리보기
     const krw = val * exchangeRateAudToKrw;
-    preview.innerHTML = `<span style="color:#fbbf24;">≈ ₩ ${fmtPrice(Math.round(krw))}</span> <span style="color:var(--text-muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
+    preview.innerHTML = `<span style="color:var(--brand-ochre);">≈ ₩ ${fmtPrice(Math.round(krw))}</span> <span style="color:var(--muted);">(1 AUD = ₩${exchangeRateAudToKrw.toFixed(0)})</span>`;
   }
 }
 
@@ -1760,13 +1771,13 @@ function renderExpenses() {
   const CAT_EMOJI = { "항공/교통": "✈️", "숙박": "🏨", "식비": "🍔", "관광/투어": "🎡", "쇼핑": "🛍️", "기타": "📦" };
 
   function makeHtml(arr, isPre) {
-    if (arr.length === 0) return `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed rgba(255,255,255,0.1);">내역이 없습니다.</div>`;
+    if (arr.length === 0) return `<div style="text-align:center; padding:16px; color:var(--muted); font-size:13px; background:var(--surface-soft); border-radius:12px; border:1px dashed var(--hairline);">내역이 없습니다.</div>`;
     return arr.map(e => {
       const krw = e.amountKrw || Math.round((e.amount||0) * exchangeRateAudToKrw);
       const aud = e.amount || (krw / exchangeRateAudToKrw);
       // Pre: 원화 크게, AUD 작게 / Trip: AUD 크게, 원화 작게
       const mainAmt  = isPre ? `₩ ${fmtPrice(krw)}` : `A$ ${fmtPrice(aud.toFixed(2))}`;
-      const mainColor= isPre ? "#fbbf24" : "#a78bfa";
+      const mainColor= isPre ? "var(--brand-ochre)" : "var(--brand-lavender)";
       const subAmt   = isPre ? `≈ A$ ${aud.toFixed(2)}` : `≈ ₩ ${fmtPrice(krw)}`;
 
       return `
@@ -1774,11 +1785,11 @@ function renderExpenses() {
         <div class="fc-header" style="align-items:center;">
           <div class="fc-header-left">
             <div class="fc-airline-name" style="font-size:16px;">${CAT_EMOJI[e.category] || "📦"} ${e.title}</div>
-            ${e.memo ? `<div class="fc-airline-meta" style="color:var(--text-sub);margin-top:4px;">💬 ${e.memo}</div>` : ""}
+            ${e.memo ? `<div class="fc-airline-meta" style="color:var(--body);margin-top:4px;">💬 ${e.memo}</div>` : ""}
           </div>
           <div class="fc-header-right" style="text-align:right;">
             <div class="fc-price" style="color:${mainColor}; font-size:20px;">${mainAmt}</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${subAmt}</div>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">${subAmt}</div>
             <div class="fc-actions" style="justify-content:flex-end;">
               <button class="btn-action" onclick="openExpenseModal('${e.id}')" title="수정">✏️</button>
               <button class="btn-action del" onclick="deleteExpense('${e.id}')" title="삭제">🗑</button>
