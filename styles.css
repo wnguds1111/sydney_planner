@@ -2501,3 +2501,376 @@ footer {
 @media (max-width: 768px) {
   .flight-details-grid { grid-template-columns: 1fr; }
 }
+
+/* ================================================================
+   MOBILE UX ENHANCEMENTS
+   Safe Area · Touch Targets · Performance · Keyboard · Feedback
+   ================================================================ */
+
+/* ── Safe area insets (iPhone 노치 / Dynamic Island 대응) ── */
+@supports (padding: env(safe-area-inset-top)) {
+  .tabs-bar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  footer {
+    padding-bottom: max(40px, calc(20px + env(safe-area-inset-bottom)));
+  }
+  .floating-memo-widget {
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: calc(24px + env(safe-area-inset-right));
+  }
+  .modal-overlay {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ── 768px 이하: 모바일 UX 보강 ── */
+@media (max-width: 768px) {
+
+  /* ── 터치 타겟 44px 최소 보장 (Apple HIG 기준) ── */
+  .btn-action {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .check-box-custom {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+  .check-box-custom.checked::after {
+    font-size: 15px !important;
+  }
+
+  .btn-book-sm,
+  .btn-link-sm,
+  .btn-hotel-book {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .filter-chip {
+    min-height: 40px;
+    display: inline-flex !important;
+    align-items: center;
+  }
+
+  .day-tab-mini {
+    min-height: 40px;
+    display: inline-flex !important;
+    align-items: center;
+  }
+
+  .btn-select {
+    min-height: 44px;
+    padding: 10px 18px !important;
+  }
+
+  .btn-add-entry {
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .btn-primary {
+    min-height: 48px;
+  }
+
+  /* ── 탭바 터치 UX 개선 ── */
+  .tabs-bar {
+    gap: 4px !important;
+    padding: 8px 12px !important;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 12px;
+  }
+  .tab-btn {
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+    gap: 5px !important;
+    min-height: 44px;
+    scroll-snap-align: start;
+  }
+  .tab-btn .tab-icon {
+    font-size: 16px !important;
+  }
+
+  /* ── 메모 위젯: 키보드 대응 + 모바일 최적화 ── */
+  .memo-card-popup {
+    height: auto !important;
+    max-height: min(480px, 70vh) !important;
+    max-height: min(480px, 70dvh) !important; /* dvh: 키보드 열릴 때 축소 */
+    width: calc(100vw - 32px) !important;
+    right: -8px !important;
+    bottom: 62px !important;
+  }
+
+  .memo-popup-body {
+    min-height: 100px;
+    max-height: none !important;
+  }
+
+  .memo-trigger-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 22px;
+  }
+
+  .floating-memo-widget {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .memo-input-field {
+    font-size: 16px !important; /* iOS 자동 줌 방지: 16px 이상 */
+  }
+
+  /* ── 요약 배너 스크롤 힌트 (페이드 그라디언트) ── */
+  .summary-banner {
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+  .summary-banner::-webkit-scrollbar { display: none; }
+  .summary-banner:focus-within,
+  .summary-banner:active {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  /* ── 지도 높이 축소 (모바일 뷰포트 대비 과도한 520px → 340px) ── */
+  #googleMap {
+    height: 340px !important;
+    min-height: 340px !important;
+  }
+  .map-placeholder {
+    height: 280px !important;
+    min-height: 280px !important;
+  }
+
+  /* ── 떠다니는 동물: 모바일 성능 최적화를 위해 비활성화 ── */
+  .floating-animals-wrap {
+    display: none !important;
+  }
+  .btn-quokka-toggle {
+    display: none !important;
+  }
+
+  /* ── 모달 내부 그리드: 확실한 1컬럼 폴백 ── */
+  .modal-body [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── 폼 인풋 iOS 자동 줌 방지 (16px 이상) ── */
+  .form-input,
+  .add-check-input,
+  .map-api-input,
+  .memo-search-input {
+    font-size: 16px !important;
+  }
+
+  /* ── 예약 현황 대시보드 1컬럼 ── */
+  .booking-summary-dashboard {
+    grid-template-columns: 1fr !important;
+  }
+  .booking-items-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── 텍스트 오버플로우 방지 ── */
+  .fc-airline-name,
+  .hc-card-name,
+  .summary-item-card-name,
+  .timeline-name {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto;
+  }
+
+  /* ── 터치 활성 피드백 (탭 시 시각적 응답) ── */
+  .tab-btn:active,
+  .filter-chip:active,
+  .btn-action:active,
+  .btn-add-entry:active,
+  .btn-primary:active,
+  .btn-select:active,
+  .btn-book-sm:active,
+  .btn-link-sm:active,
+  .btn-hotel-book:active,
+  .day-tab-mini:active,
+  .btn-add-place:active,
+  .btn-add-check:active,
+  .check-box-custom:active,
+  .memo-trigger-btn:active,
+  .btn-send-memo:active {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  /* ── 터치 기기: hover 효과 비활성화 (sticky hover 방지) ── */
+  @media (hover: none) and (pointer: coarse) {
+    .glass-card:hover,
+    .hc-card:hover,
+    .fc-card-wrap:hover,
+    .fc-row:hover {
+      transform: none !important;
+      box-shadow: var(--shadow-card) !important;
+    }
+    .glass-card:active {
+      transform: scale(0.99) !important;
+      box-shadow: var(--shadow-card-hover) !important;
+      transition: transform 0.15s ease !important;
+    }
+    .hotel-card:hover .hotel-thumb-img {
+      transform: none !important;
+    }
+    /* fc-row 좌측 인디케이터 hover 비활성 */
+    .fc-row:hover::after {
+      opacity: 0 !important;
+    }
+    .fc-row:active::after {
+      opacity: 1 !important;
+    }
+    .memo-note-item:hover {
+      transform: none !important;
+    }
+  }
+
+  /* ── 섹션 헤딩: 좁은 화면에서 버튼 위치 개선 ── */
+  .section-heading {
+    gap: 10px !important;
+  }
+  .section-heading .btn-add-entry {
+    flex-shrink: 0;
+  }
+
+  /* ── 지출 모달 라디오 그룹: 세로 정렬 ── */
+  #expenseModal .modal-body div[style*="gap:16px"] {
+    flex-wrap: wrap;
+  }
+
+  /* ── 타임라인(일정표) 터치 편의 ── */
+  .timeline-item {
+    padding: 16px 0 !important;
+  }
+  .timeline-dot {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
+  }
+  .timeline-dot-wrap {
+    min-width: 32px !important;
+  }
+}
+
+/* ── 초소형 화면 (≤400px) 보강 ── */
+@media (max-width: 400px) {
+  /* 카운트다운 구분자 숨김 & 압축 */
+  .countdown-sep {
+    display: none !important;
+  }
+  .hero-countdown {
+    gap: 4px !important;
+    padding: 8px 10px !important;
+  }
+  .countdown-item {
+    min-width: 32px !important;
+  }
+  .countdown-num {
+    font-size: 18px !important;
+  }
+  .countdown-lbl {
+    font-size: 8px !important;
+    letter-spacing: 1px !important;
+  }
+
+  .section-title {
+    font-size: 18px !important;
+    gap: 8px !important;
+  }
+  .section-sub {
+    font-size: 12px !important;
+  }
+  .section-title-icon {
+    font-size: 22px !important;
+  }
+
+  .hc-card-actions .btn-action {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .memo-card-popup {
+    max-height: min(400px, 65vh) !important;
+    max-height: min(400px, 65dvh) !important;
+  }
+
+  /* 탭: 더 압축 */
+  .tab-btn {
+    padding: 8px 10px !important;
+    font-size: 10px !important;
+    min-height: 40px;
+  }
+}
+
+/* ── 가로 모드 (Landscape) 최적화 ── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    min-height: 160px !important;
+    padding: 24px 16px 20px !important;
+  }
+  .hero-countdown {
+    display: none !important;
+  }
+  .hero-sub {
+    margin-bottom: 0 !important;
+  }
+
+  .memo-card-popup {
+    max-height: 85vh !important;
+    bottom: 58px !important;
+  }
+
+  #googleMap,
+  .map-placeholder {
+    height: 240px !important;
+    min-height: 240px !important;
+  }
+
+  .modal-body {
+    max-height: 70vh !important;
+  }
+}
+
+/* ── iOS / Safari 입력 필드 줌 방지를 위한 전역 보호 ── */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="url"],
+  input[type="email"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── 스크롤 스냅: 탭 전환 시 부드러운 스크롤 ── */
+@media (max-width: 768px) {
+  .tabs-bar {
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+  }
+}
